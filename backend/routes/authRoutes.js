@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const { body, validationResult } = require("express-validator");
 const User = require("../models/userModel");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ router.post(
   [
     body("email").isEmail().withMessage("Enter a valid email"),
     body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
+    body("username").isLength({ min: 3, max: 20 }).withMessage("Username must be between 3 and 20 characters"),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -20,16 +22,22 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password, username } = req.body;
 
     try {
+      // Check for existing email or username
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        return res.status(400).json({ error: "User already exists" });
+        return res.status(400).json({ error: "Email already in use" });
+      }
+
+      const existingUsername = await User.findOne({ username });
+      if (existingUsername) {
+        return res.status(400).json({ error: "Username already in use" });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({ name, email, password: hashedPassword });
+      const newUser = new User({ name, email, password: hashedPassword, username });
       await newUser.save();
 
       res.status(201).json({ message: "User registered successfully" });
@@ -38,6 +46,7 @@ router.post(
     }
   }
 );
+
 
 // Login Route
 router.post(
@@ -139,7 +148,6 @@ router.post("/reset-password/:token", async (req, res) => {
   console.log('Token received:', token); 
 
   try {
-    // Verify the reset token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.id);
