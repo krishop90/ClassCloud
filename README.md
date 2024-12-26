@@ -14,7 +14,7 @@ Password Reset: After receiving the reset link, users can reset their password s
 Email with Reset Link: A password reset email is sent to users after requesting a reset, with a valid token in the URL.
 Token Verification: The reset token is verified before allowing the user to change their password.
 
-3. Lecture Management (In Progress)
+3. Lecture Management
 Create Lecture: Admins and instructors can create new lectures, specifying details like title, description, date, and time.
 Get Lectures: Users can fetch a list of lectures, with filtering options like course or date.
 Attend Lectures: Students can mark themselves as attending lectures.
