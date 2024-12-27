@@ -15,9 +15,8 @@ Email with Reset Link: A password reset email is sent to users after requesting 
 Token Verification: The reset token is verified before allowing the user to change their password.
 
 3. Lecture Management
-Create Lecture: Admins and instructors can create new lectures, specifying details like title, description, date, and time.
+Create Lecture: users can create new lectures, specifying details like title, description, date, and time.
 Get Lectures: Users can fetch a list of lectures, with filtering options like course or date.
-Attend Lectures: Students can mark themselves as attending lectures.
 
-4. Lecture Materials Upload (Planned)
-Upload Notes/Presentations: Instructors can upload lecture materials (such as PDF or PPT files) for students.
+4. Notes Feature (note feature where user can upload ppt/pptx/pdf to all the users)
+Upload Notes/Presentations: users can upload lecture materials (such as PDF or PPT files) for students.
