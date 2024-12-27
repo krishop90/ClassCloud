@@ -19,7 +19,7 @@ Create Lecture: users can create new lectures, specifying details like title, de
 Get Lectures: Users can fetch a list of lectures, with filtering options like course or date.
 
 4. Notes Feature (note feature where user can upload ppt/pptx/pdf to all the users)
-Upload Notes/Presentations: users can upload lecture materials (such as PDF or PPT files) for students.
+Upload Notes/Presentations: users can upload lecture materials (such as PDF or PPT files) for other users to download and read it later.
 
 5. community / real time chat feature
    Done with communities creation , deletion , update , invite , request , kick out , join and real time chat feature 
