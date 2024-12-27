@@ -1,6 +1,34 @@
 const multer = require("multer");
 const path = require("path");
 
+//avatar storage
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/avatars"); // Save avatars in 'uploads/avatars'
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  },
+});
+
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // Limit avatar size to 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    const fileTypes = /jpeg|jpg|png/; // Allow JPEG, JPG, PNG files
+    const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimeType = fileTypes.test(file.mimetype);
+
+    if (extname && mimeType) {
+      return cb(null, true);
+    } else {
+      cb(new Error("Error: Only image files (jpeg, jpg, png) are allowed"));
+    }
+  },
+});
+
 // Set up storage for videos
 const videoStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -57,4 +85,4 @@ const uploadNote = multer({
   },
 });
 
-module.exports = { uploadVideo, uploadNote };
+module.exports = {uploadAvatar, uploadVideo, uploadNote };
