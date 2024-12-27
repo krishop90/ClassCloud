@@ -27,6 +27,30 @@ const uploadNote = async (req, res) => {
   }
 };
 
+//download notes
+const downloadNote = async (req, res) => {
+  try {
+    const noteId = req.params.noteId;
+    const note = await Note.findById(noteId);
+
+    if (!note) {
+      console.error(`Note with ID ${noteId} not found`);
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    const filePath = path.resolve(note.filePath);
+    if (!fs.existsSync(filePath)) {
+      console.error(`File not found at path: ${filePath}`);
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    res.download(filePath);
+  } catch (error) {
+    console.error("Error fetching note for download:", error);
+    res.status(500).json({ message: "Failed to fetch note for download" });
+  }
+};
+
 // Get all notes
 const getAllNotes = async (req, res) => {
   try {
@@ -40,4 +64,4 @@ const getAllNotes = async (req, res) => {
   }
 };
 
-module.exports = { uploadNote, getAllNotes };
+module.exports = { uploadNote, getAllNotes , downloadNote};
