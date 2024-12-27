@@ -12,7 +12,7 @@ router.post(
     body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
     body("username").isLength({ min: 3, max: 20 }).withMessage("Username must be between 3 and 20 characters"),
   ],
-  signup // Use the signup controller function
+  signup 
 );
 
 // Login Route
@@ -22,7 +22,7 @@ router.post(
     body("email").isEmail().withMessage("Enter a valid email"),
     body("password").notEmpty().withMessage("Password is required"),
   ],
-  login // Use the login controller function
+  login 
 );
 
 // Forgot Password Route

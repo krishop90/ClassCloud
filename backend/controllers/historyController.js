@@ -5,7 +5,6 @@ const addToHistory = async (req, res) => {
   try {
     const { userId, videoId, watchDuration, completed } = req.body;
 
-    // Create a new history entry
     const newHistory = await History.create({
       user: userId,
       video: videoId,

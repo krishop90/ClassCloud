@@ -8,7 +8,6 @@ const uploadVideo = async (req, res) => {
       return res.status(400).json({ message: "No video file uploaded." });
     }
 
-    // Ensure the user is authenticated
     if (!req.user) {
       return res.status(401).json({ message: "User not authenticated" });
     }
@@ -16,21 +15,33 @@ const uploadVideo = async (req, res) => {
     // Generate thumbnail
     const thumbnailPath = await generateThumbnail(req.file.path, "uploads/thumbnails");
 
-    // Save video to the database
     const video = new Video({
       title: req.body.title,
       description: req.body.description,
       videoPath: req.file.path,
       thumbnail: thumbnailPath,
-      uploadedBy: req.user._id,  // Use req.user._id (authenticated user ID)
+      uploadedBy: req.user._id, 
     });
 
     await video.save();
     res.status(201).json(video);
   } catch (error) {
-    console.error("Error during video upload:", error);  // Log the error for debugging
+    console.error("Error during video upload:", error); 
     res.status(500).json({ message: "Video upload failed", error: error.message });
   }
 };
 
-module.exports = { uploadVideo };
+const getAllVideos = async (req, res) => {
+  try {
+    const videos = await Video.find()
+      .populate("uploadedBy", "username email") 
+      .sort({ uploadDate: -1 });
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+    res.status(500).json({ message: "Failed to fetch videos", error: error.message });
+  }
+};
+
+
+module.exports = { uploadVideo , getAllVideos};

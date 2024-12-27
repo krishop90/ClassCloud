@@ -6,7 +6,10 @@ const authRoutes = require("./routes/authRoutes");
 const friendRoutes = require("./routes/friendRoutes");
 const videoRoutes = require("./routes/videoRoutes"); 
 const historyRoutes = require("./routes/historyRoutes");
+const noteRoutes = require("./routes/noteRoutes");
 
+
+const path = require("path");
 const cors = require('cors');
 
 const app = express();
@@ -22,6 +25,8 @@ app.use("/api/users", authRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/videos", videoRoutes);
+app.use("/api/notes", noteRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 // MongoDB Connection

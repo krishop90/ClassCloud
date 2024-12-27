@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { addToHistory, getUserHistory } = require("../controllers/historyController"); // Import the controller
+const { addToHistory, getUserHistory } = require("../controllers/historyController"); 
 
 // Add a video to history route
-router.post("/", addToHistory); // Use the addToHistory controller function
+router.post("/", addToHistory); 
 
 // Get user's watch history route
-router.get("/:userId", getUserHistory); // Use the getUserHistory controller function
+router.get("/:userId", getUserHistory); 
 
 module.exports = router;
