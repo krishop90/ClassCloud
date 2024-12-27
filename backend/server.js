@@ -34,13 +34,19 @@ const io = socketIo(server, {
 });
 
 // Handle socket connections
-io.on("connection", (socket) => {  // Change socketIo to io
+io.on("connection", (socket) => {  
   console.log("New client connected");
 
+  // When a user joins a community, join the corresponding room
+  socket.on("joinCommunity", (communityId, username) => {
+    console.log(`${username} joined the ${communityId} room`);
+    socket.join(communityId);  // Join the room based on the community ID
+  });
+
   // Handling message sending from client
-  socket.on("sendMessage", (message) => {
-    // Broadcast message to all users
-    io.emit("receiveMessage", message);  // Change socketIo to io
+  socket.on("sendMessage", (communityId, message) => {
+    console.log(`Sending message to ${communityId} room: ${message}`);
+    io.to(communityId).emit("receiveMessage", message);  // Send to the specific community room
   });
 
   socket.on("disconnect", () => {

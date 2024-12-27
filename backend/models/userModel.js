@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
 ],
 });
 
+userSchema.add({
+  communities: [{ type: mongoose.Schema.Types.ObjectId, ref: "Community" }],
+});
+
 userSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
