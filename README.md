@@ -20,3 +20,6 @@ Get Lectures: Users can fetch a list of lectures, with filtering options like co
 
 4. Notes Feature (note feature where user can upload ppt/pptx/pdf to all the users)
 Upload Notes/Presentations: users can upload lecture materials (such as PDF or PPT files) for students.
+
+5. community / real time chat feature
+   Done with communities creation , deletion , update , invite , request , kick out , join and real time chat feature 
