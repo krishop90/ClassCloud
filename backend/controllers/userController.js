@@ -196,6 +196,31 @@ const rejectFriendRequest = async (req, res) => {
   }
 };
 
+// Get Recent Activity
+const getRecentActivity = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const registeredEvents = await Event.find({ "registrations.userId": userId })
+      .sort({ date: -1 })
+      .limit(5);
+
+    const recentNotes = await Note.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentCommunities = await Community.find({ "members.userId": userId })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    res.json({ registeredEvents, recentNotes, recentCommunities });
+  } catch (error) {
+    console.error("Error fetching recent activity:", error);
+    res.status(500).json({ message: "Failed to fetch recent activity", error: error.message });
+  }
+};
+
+
 module.exports = {
   signup,
   login,
@@ -204,5 +229,6 @@ module.exports = {
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
+  getRecentActivity,
 };
 

@@ -10,6 +10,10 @@ const videoRoutes = require("./routes/videoRoutes");
 const historyRoutes = require("./routes/historyRoutes");
 const noteRoutes = require("./routes/noteRoutes");
 const communityRoutes = require("./routes/communityRoutes"); 
+const eventRoutes = require("./routes/eventRoutes");
+const workRoutes = require("./routes/workRoutes");
+const activityRoutes = require('./routes/activityRoutes');
+
 
 const path = require("path");
 const cors = require('cors');
@@ -63,6 +67,9 @@ app.use("/api/history", historyRoutes);
 app.use("/api/videos", videoRoutes);
 app.use("/api/notes", noteRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/events", eventRoutes);
+app.use("/api/work", workRoutes);
+app.use("/api/user", activityRoutes);
 
 //frontend
 app.use(express.static(path.join(__dirname, 'frontend', 'public')));
