@@ -23,3 +23,10 @@ Upload Notes/Presentations: users can upload lecture materials (such as PDF or P
 
 5. community / real time chat feature
    Done with communities creation , deletion , update , invite , request , kick out , join and real time chat feature 
+
+6. Events feature
+   Done with event feature where  user can create event and other user can register
+
+7. Work feature 
+   user can create a to-do list of their work and update it as well mark it as done .
+ 
