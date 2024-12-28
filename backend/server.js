@@ -30,7 +30,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:5000', // Frontend URL (if served from localhost:5000)
+    origin: 'http://localhost:3000', // Frontend URL
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
     credentials: true
