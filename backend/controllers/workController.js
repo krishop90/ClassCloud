@@ -11,7 +11,7 @@ const createWork = async (req, res) => {
 
     const newWork = new Work({
       task,
-      createdBy: req.user.id, // Assuming user is logged in and the ID is available in req.user
+      createdBy: req.user.id, 
     });
 
     await newWork.save();
@@ -22,7 +22,7 @@ const createWork = async (req, res) => {
   }
 };
 
-// Get all work/tasks for the logged-in user
+//get all work/tasks
 const getAllWork = async (req, res) => {
   try {
     const workList = await Work.find({ createdBy: req.user.id }).sort({ createdAt: -1 });
@@ -33,7 +33,6 @@ const getAllWork = async (req, res) => {
   }
 };
 
-// Update task (mark as completed)
 const updateWork = async (req, res) => {
   try {
     const { id } = req.params;
@@ -43,12 +42,10 @@ const updateWork = async (req, res) => {
       return res.status(404).json({ message: "Work not found" });
     }
 
-    // Mark as completed (toggle the isCompleted field)
     work.isCompleted = !work.isCompleted;
 
     await work.save();
 
-    // If completed, delete the task
     if (work.isCompleted) {
       await work.deleteOne();
       return res.status(200).json({ message: "Task completed and deleted" });
@@ -61,5 +58,4 @@ const updateWork = async (req, res) => {
   }
 };
 
-// Export the controller functions
 module.exports = { createWork, getAllWork, updateWork };

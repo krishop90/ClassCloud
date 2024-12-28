@@ -26,12 +26,10 @@ const processAvatarUpload = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    // Check if the logged-in user is the creator
     if (community.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "You are not authorized to upload avatar" });
     }
 
-    // Assuming the avatar is stored in 'req.file'
     community.avatar = req.file.path;
 
     await community.save();
@@ -71,16 +69,13 @@ const updateCommunity = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    // Check if the logged-in user is the creator
     if (community.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "You are not authorized to update this community" });
     }
 
-    // Update the community name
     community.name = req.body.name || community.name;
     community.description = req.body.description || community.description;
 
-    // Save updated community
     await community.save();
     res.status(200).json(community);
   } catch (error) {
@@ -89,7 +84,6 @@ const updateCommunity = async (req, res) => {
 };
 
 
-//invite to community
 const inviteToCommunity = async (req, res) => {
   const { communityId } = req.params;
   const { friendIds } = req.body; // Extract friendIds from request body
@@ -105,15 +99,13 @@ const inviteToCommunity = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    // Ensure friendIds is initialized as an array before pushing
     if (!community.invitedFriends) {
       community.invitedFriends = [];
     }
 
-    // Push friends into the invitedFriends array
     friendIds.forEach((friendId) => {
       if (!community.invitedFriends.includes(friendId)) {
-        community.invitedFriends.push(friendId); // Invite friend only if not already invited
+        community.invitedFriends.push(friendId); 
       }
     });
 
@@ -136,17 +128,14 @@ const requestToJoin = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    // Check if the user is already a member
     if (community.members.includes(req.user._id)) {
       return res.status(400).json({ message: "You are already a member of this community" });
     }
 
-    // Check if the user has already requested to join
     if (community.joinRequests.includes(req.user._id)) {
       return res.status(400).json({ message: "You have already requested to join this community" });
     }
 
-    // Add user to join requests
     community.joinRequests.push(req.user._id);
     await community.save();
 
@@ -166,17 +155,14 @@ const acceptJoinRequest = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    // Check if the logged-in user is the creator
     if (community.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "You are not authorized to accept join requests" });
     }
 
-    // Check if the user has requested to join
     if (!community.joinRequests.includes(userId)) {
       return res.status(400).json({ message: "No join request found for this user" });
     }
 
-    // Remove from join requests and add to members
     community.joinRequests = community.joinRequests.filter(
       (request) => request.toString() !== userId
     );
@@ -199,17 +185,14 @@ const rejectJoinRequest = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    // Check if the logged-in user is the creator
     if (community.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "You are not authorized to reject join requests" });
     }
 
-    // Check if the user has requested to join
     if (!community.joinRequests.includes(userId)) {
       return res.status(400).json({ message: "No join request found for this user" });
     }
 
-    // Remove from join requests
     community.joinRequests = community.joinRequests.filter(
       (request) => request.toString() !== userId
     );
@@ -231,12 +214,10 @@ const kickUser = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    // Check if the logged-in user is the creator
     if (community.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "You are not authorized to kick users" });
     }
 
-    // Remove user from members
     community.members = community.members.filter((member) => member.toString() !== userId);
 
     await community.save();

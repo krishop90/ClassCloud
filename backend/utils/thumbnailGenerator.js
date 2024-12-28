@@ -11,15 +11,15 @@ const generateThumbnail = (videoPath, thumbnailDir) => {
     
     ffmpeg(videoPath)
       .on('end', () => {
-        resolve(thumbnailPath);  // Return the path to the thumbnail
+        resolve(thumbnailPath);  
       })
       .on('error', (err) => {
-        reject(err);  // Handle errors in thumbnail generation
+        reject(err); 
       })
       .screenshots({
         count: 1,
         folder: thumbnailDir,
-        filename: `${Date.now()}.jpg`,  // Generates a unique filename
+        filename: `${Date.now()}.jpg`, 
         size: '320x240',
       });
   });

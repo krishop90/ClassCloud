@@ -43,13 +43,11 @@ const registerForEvent = async (req, res) => {
   try {
     const { eventId, name, email, phone } = req.body;
 
-    // Find event by ID
     const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Register the user
     event.registrations.push({ name, email, phone });
     await event.save();
 
@@ -61,7 +59,7 @@ const registerForEvent = async (req, res) => {
 };
 
 
-// Controller function to download registration sheet in CSV
+// download registration sheet
 const downloadRegistrations = async (req, res) => {
   try {
     const eventId = req.params.id;
@@ -81,10 +79,8 @@ const downloadRegistrations = async (req, res) => {
       phone: reg.phone
     }));
 
-    // Convert the registrations to CSV format
     const csv = parse(registrations);
 
-    // Set the response headers for file download
     res.header('Content-Type', 'text/csv');
     res.attachment('registrations.csv');
     res.send(csv);

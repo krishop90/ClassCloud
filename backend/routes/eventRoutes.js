@@ -13,8 +13,6 @@ const { protect } = require("../middleware/authMiddleware");
 const authenticate = require('../middleware/authMiddleware');
 
 
-
-
 // Route to create an event (only accessible to authenticated users)
 router.post("/create", protect, createEvent);
 

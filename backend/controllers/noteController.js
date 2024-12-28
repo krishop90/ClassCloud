@@ -7,16 +7,14 @@ const uploadNote = async (req, res) => {
       return res.status(400).json({ message: "No note file uploaded." });
     }
 
-    // Ensure the user is authenticated
     if (!req.user) {
       return res.status(401).json({ message: "User not authenticated" });
     }
 
-    // Save note to the database
     const note = new Note({
       title: req.body.title,
       filePath: req.file.path,
-      uploadedBy: req.user._id, // Authenticated user ID
+      uploadedBy: req.user._id, 
     });
 
     await note.save();
@@ -55,8 +53,8 @@ const downloadNote = async (req, res) => {
 const getAllNotes = async (req, res) => {
   try {
     const notes = await Note.find()
-      .populate("uploadedBy", "username email") // Populate user info if needed
-      .sort({ uploadDate: -1 }); // Sort by most recent first
+      .populate("uploadedBy", "username email") 
+      .sort({ uploadDate: -1 });
     res.status(200).json(notes);
   } catch (error) {
     console.error("Error fetching notes:", error);

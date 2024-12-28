@@ -4,20 +4,20 @@ const path = require("path");
 //avatar storage
 const avatarStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/avatars"); // Save avatars in 'uploads/avatars'
+    cb(null, "uploads/avatars");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
 const uploadAvatar = multer({
   storage: avatarStorage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // Limit avatar size to 5MB
+    fileSize: 5 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
-    const fileTypes = /jpeg|jpg|png/; // Allow JPEG, JPG, PNG files
+    const fileTypes = /jpeg|jpg|png/; 
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
     const mimeType = fileTypes.test(file.mimetype);
 
@@ -29,13 +29,12 @@ const uploadAvatar = multer({
   },
 });
 
-// Set up storage for videos
 const videoStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/videos"); // Save videos in 'uploads/videos'
+    cb(null, "uploads/videos");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    cb(null, Date.now() + path.extname(file.originalname)); 
   },
 });
 
@@ -60,10 +59,10 @@ const uploadVideo = multer({
 // Set up storage for notes
 const noteStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/notes"); // Save notes in 'uploads/notes'
+    cb(null, "uploads/notes"); 
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    cb(null, Date.now() + path.extname(file.originalname)); 
   },
 });
 
@@ -73,7 +72,7 @@ const uploadNote = multer({
     fileSize: 1 * 1024 * 1024 * 1024, // 1 GB
   },
   fileFilter: (req, file, cb) => {
-    const fileTypes = /pdf|ppt|pptx|txt/; // Allow PDF and PPT files only
+    const fileTypes = /pdf|ppt|pptx|txt/; 
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
     const mimeType = fileTypes.test(file.mimetype);
 

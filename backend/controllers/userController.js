@@ -7,7 +7,6 @@ const User = require("../models/userModel");
 const signup = async (req, res) => {
   const { name, email, password, username } = req.body;
   try {
-    // Check for existing email or username
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "Email already in use" });
