@@ -14,7 +14,8 @@ const {
   processAvatarUpload,
   kickUser,
   getCommunityMembers,
-  getAllCommunities
+  getAllCommunities,
+  searchCommunities,
 } = require("../controllers/communityController");
 
 // Create community
@@ -46,5 +47,9 @@ router.get("/:communityId/members", protect, getCommunityMembers);
 
 // Get all communities
 router.get("/", getAllCommunities);
+
+// Search communities
+router.get("/search", protect, searchCommunities);
+
 
 module.exports = router;

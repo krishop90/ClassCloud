@@ -62,4 +62,31 @@ const getAllNotes = async (req, res) => {
   }
 };
 
-module.exports = { uploadNote, getAllNotes , downloadNote};
+const searchNotes = async (req, res) => {
+  try {
+    const { query } = req.query; // Extract search query from request
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const notes = await Note.find({
+      $or: [
+        { title: { $regex: query, $options: "i" } }, // Case-insensitive search in title
+        { uploadedBy: { $regex: query, $options: "i" } } // Case-insensitive search in uploadedBy
+      ]
+    })
+      .populate("uploadedBy", "username email") // Populate user details
+      .sort({ uploadDate: -1 });
+
+    if (notes.length === 0) {
+      return res.status(404).json({ message: "No notes found matching the query" });
+    }
+
+    res.status(200).json(notes);
+  } catch (error) {
+    console.error("Error during note search:", error);
+    res.status(500).json({ message: "Failed to search notes", error: error.message });
+  }
+};
+
+module.exports = { uploadNote, getAllNotes , downloadNote , searchNotes};

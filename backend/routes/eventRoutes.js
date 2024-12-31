@@ -7,6 +7,7 @@ const {
   downloadRegistrations,
   deleteEvent,
   getUpcomingEvents,
+  searchEvents,
 } = require("../controllers/eventController");
 const eventController = require('../controllers/eventController');
 const { protect } = require("../middleware/authMiddleware"); 
@@ -31,5 +32,8 @@ router.delete("/:id", protect, deleteEvent);
 
 // Route to get upcoming events
 router.get("/upcoming", eventController.getUpcomingEvents);
+
+// Search for events
+router.get("/search", protect, searchEvents);
 
 module.exports = router;

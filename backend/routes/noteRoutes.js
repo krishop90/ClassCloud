@@ -6,7 +6,7 @@ const path = require("path");
 const { uploadNote: uploadMiddleware } = require("../middleware/fileUploadMiddleware");
 const { uploadNote, getAllNotes , downloadNote} = require("../controllers/noteController");
 const { protect } = require("../middleware/authMiddleware");
-
+const { searchNotes } = require("../controllers/noteController");
 // Upload note route
 router.post("/upload", protect, uploadMiddleware.single("note"), uploadNote);
 
@@ -34,5 +34,9 @@ router.get("/download/:id", protect, async (req, res) => {
 
 // Get all notes route
 router.get("/", getAllNotes);
+
+
+// Search notes route
+router.get("/search", protect, searchNotes);
 
 module.exports = router;

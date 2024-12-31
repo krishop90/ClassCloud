@@ -22,7 +22,7 @@ const createWork = async (req, res) => {
   }
 };
 
-//get all work/tasks
+// Get all work/tasks
 const getAllWork = async (req, res) => {
   try {
     const workList = await Work.find({ createdBy: req.user.id }).sort({ createdAt: -1 });
@@ -33,6 +33,25 @@ const getAllWork = async (req, res) => {
   }
 };
 
+// Get summary of tasks
+const getWorkSummary = async (req, res) => {
+  try {
+    const totalTasks = await Work.countDocuments({ createdBy: req.user.id });
+    const completedTasks = await Work.countDocuments({ createdBy: req.user.id, isCompleted: true });
+    const remainingTasks = totalTasks - completedTasks;
+
+    res.status(200).json({
+      totalTasks,
+      completedTasks,
+      remainingTasks
+    });
+  } catch (error) {
+    console.error("Error fetching work summary:", error);
+    res.status(500).json({ message: "Error fetching work summary", error: error.message });
+  }
+};
+
+// Update work (mark as completed and delete)
 const updateWork = async (req, res) => {
   try {
     const { id } = req.params;
@@ -58,4 +77,4 @@ const updateWork = async (req, res) => {
   }
 };
 
-module.exports = { createWork, getAllWork, updateWork };
+module.exports = { createWork, getAllWork, updateWork, getWorkSummary };

@@ -220,6 +220,24 @@ const getRecentActivity = async (req, res) => {
   }
 };
 
+// Get Friends List
+const getFriendsList = async (req, res) => {
+  try {
+    const userId = req.user.id; // ID of the logged-in user
+
+    const user = await User.findById(userId).populate("friends", "name username avatar");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user.friends);
+  } catch (error) {
+    console.error("Error fetching friends list:", error);
+    res.status(500).json({ message: "Failed to fetch friends list", error: error.message });
+  }
+};
+
+
 
 module.exports = {
   signup,
@@ -230,5 +248,6 @@ module.exports = {
   acceptFriendRequest,
   rejectFriendRequest,
   getRecentActivity,
+  getFriendsList,
 };
 

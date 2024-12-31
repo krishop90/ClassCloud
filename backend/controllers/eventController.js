@@ -16,6 +16,7 @@ const createEvent = async (req, res) => {
             venue,
             date,
             time,
+            capacity, 
             createdBy: req.user.id
         });
 
@@ -48,6 +49,10 @@ const registerForEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
+    if (event.registrations.length >= event.capacity) {
+      return res.status(400).json({ message: "Registration closed, event capacity reached." });
+    }
+
     event.registrations.push({ name, email, phone });
     await event.save();
 
@@ -57,6 +62,7 @@ const registerForEvent = async (req, res) => {
     res.status(500).json({ message: "Registration failed", error: error.message });
   }
 };
+
 
 
 // download registration sheet
@@ -132,4 +138,36 @@ const getUpcomingEvents = async (req, res) => {
   }
 };
 
-module.exports = { createEvent, getAllEvents, registerForEvent , downloadRegistrations , deleteEvent , getUpcomingEvents}; 
+const searchEvents = async (req, res) => {
+  try {
+    const { title, venue, date, creator } = req.query;
+
+    // Build a dynamic query object
+    const query = {};
+
+    if (title) {
+      query.title = { $regex: title, $options: "i" }; // Case-insensitive regex
+    }
+    if (venue) {
+      query.venue = { $regex: venue, $options: "i" };
+    }
+    if (date) {
+      query.date = new Date(date); // Exact date match
+    }
+    if (creator) {
+      query.createdBy = creator;
+    }
+
+    const events = await Event.find(query)
+      .populate("createdBy", "username email") // Include creator details
+      .sort({ date: 1 }); // Sort by date (earliest first)
+
+    res.status(200).json(events);
+  } catch (error) {
+    console.error("Error searching for events:", error);
+    res.status(500).json({ message: "Failed to search for events", error: error.message });
+  }
+};
+
+
+module.exports = { createEvent, getAllEvents, registerForEvent , downloadRegistrations , deleteEvent , getUpcomingEvents , searchEvents}; 

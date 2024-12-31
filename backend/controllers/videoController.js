@@ -43,5 +43,32 @@ const getAllVideos = async (req, res) => {
   }
 };
 
+const searchLectures = async (req, res) => {
+  try {
+    const { query, uploadedBy } = req.query;
 
-module.exports = { uploadVideo , getAllVideos};
+    const filter = {};
+
+    if (query) {
+      filter.title = { $regex: query, $options: "i" };
+    }
+
+    if (uploadedBy) {
+      const user = await User.findOne({ name: { $regex: uploadedBy, $options: "i" } });
+      if (user) {
+        filter.uploadedBy = user._id;
+      } else {
+        return res.status(404).json({ message: "Uploader not found" });
+      }
+    }
+
+    const lectures = await Lecture.find(filter).populate("uploadedBy", "name email");
+
+    res.status(200).json(lectures);
+  } catch (error) {
+    res.status(500).json({ message: "Error searching lectures", error: error.message });
+  }
+};
+
+
+module.exports = { uploadVideo , getAllVideos , searchLectures};

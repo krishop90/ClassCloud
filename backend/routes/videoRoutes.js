@@ -1,20 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const {uploadVideo}= require("../middleware/fileUploadMiddleware");
-const { uploadVideo : uploadVideoHandler} = require("../controllers/videoController");
-const authenticate = require('../middleware/authMiddleware');
-const Video = require("../models/videoModel"); 
+const { uploadVideo } = require("../middleware/fileUploadMiddleware");
+const { uploadVideo: uploadVideoHandler, getAllVideos, searchLectures } = require("../controllers/videoController");
 const { protect } = require("../middleware/authMiddleware");
-const { getAllVideos } = require("../controllers/videoController");
+const Video = require("../models/videoModel");
 const path = require("path");
 const fs = require("fs");
 
 // Upload video route
-router.post("/upload", protect, uploadVideo.single('video'), uploadVideoHandler);
+router.post("/upload", protect, uploadVideo.single("video"), uploadVideoHandler);
 
+// Get all videos
 router.get("/", getAllVideos);
 
-//stream video
+// Stream video
 router.get("/stream/:id", async (req, res) => {
   try {
     const video = await Video.findById(req.params.id);
@@ -68,5 +67,7 @@ router.get("/stream/:id", async (req, res) => {
   }
 });
 
+// Search lectures by title or uploader
+router.get("/search", protect, searchLectures);
 
 module.exports = router;

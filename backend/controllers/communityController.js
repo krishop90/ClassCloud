@@ -254,6 +254,28 @@ const getAllCommunities = async (req, res) => {
   }
 };
 
+const searchCommunities = async (req, res) => {
+  try {
+    const { q } = req.query; // Get the search query from the request
+
+    if (!q) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const communities = await Community.find({
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { description: { $regex: q, $options: "i" } },
+      ],
+    }).populate("creator", "name"); 
+
+    res.status(200).json(communities);
+  } catch (error) {
+    res.status(500).json({ message: "Error searching communities", error: error.message });
+  }
+};
+
+
 
 module.exports = {
   createCommunity,
@@ -266,5 +288,6 @@ module.exports = {
   processAvatarUpload,
   kickUser,
   getCommunityMembers,
-  getAllCommunities
+  getAllCommunities,
+  searchCommunities
 };

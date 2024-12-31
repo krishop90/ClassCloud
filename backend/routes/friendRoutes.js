@@ -4,6 +4,7 @@ const {
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
+  getFriendsList,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -16,5 +17,9 @@ router.post("/accept-request", protect, acceptFriendRequest);
 
 // Reject Friend Request Route
 router.post("/reject-request", protect, rejectFriendRequest);
+
+// Get Friends List Route
+router.get("/friends", protect, getFriendsList);
+
 
 module.exports = router;
