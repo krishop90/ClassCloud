@@ -18,10 +18,11 @@ const authenticate = require('../middleware/authMiddleware');
 router.post("/create", protect, createEvent);
 
 // Route to get all events
-router.get("/events", getAllEvents);
+router.get("/", getAllEvents);
 
 // Route to register for an event
-router.post("/register", registerForEvent);
+router.post('/register/:eventId', protect, registerForEvent);
+
 
 // Route to download event registrations
 router.get('/download/:id', protect, downloadRegistrations);

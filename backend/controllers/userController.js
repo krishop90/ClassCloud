@@ -1,12 +1,23 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const {validationResult} = require("express-validator");
 const nodemailer = require("nodemailer");
 const User = require("../models/userModel");
 
 // Signup Controller
 const signup = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { name, email, password, username } = req.body;
+  if (!password) {
+    return res.status(400).json({ error: "Password is required" });
+  }
+
   try {
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "Email already in use" });
@@ -27,6 +38,7 @@ const signup = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 // Login Controller
 const login = async (req, res) => {

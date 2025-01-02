@@ -10,7 +10,6 @@ const userSchema = new mongoose.Schema({
     unique: true, 
   },
   avatar: { type: String, default: null }, 
-  role: { type: String, enum: ["user", "admin"], default: "user" }, 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

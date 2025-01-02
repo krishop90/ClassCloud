@@ -12,8 +12,9 @@ router.post(
     body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
     body("username").isLength({ min: 3, max: 20 }).withMessage("Username must be between 3 and 20 characters"),
   ],
-  signup 
+  signup
 );
+
 
 // Login Route
 router.post(

@@ -1,11 +1,11 @@
 const Event = require("../models/eventModel");
 const { parse } = require('json2csv');
-
+const {fs} = require('fs');
 // Create a new event
 const createEvent = async (req, res) => {
-    const { title, description, venue, date, time } = req.body;
+    const { title, description, venue, date, time , capacity} = req.body;
 
-    if (!title || !description || !venue || !date || !time) {
+    if (!title || !description || !venue || !date || !time || !capacity) {
         return res.status(400).json({ message: 'All fields are required.' });
     }
 
@@ -42,7 +42,7 @@ const getAllEvents = async (req, res) => {
 // Register for an event
 const registerForEvent = async (req, res) => {
   try {
-    const { eventId, name, email, phone } = req.body;
+    const { eventId } = req.params; // Get the event ID from route parameters
 
     const event = await Event.findById(eventId);
     if (!event) {
@@ -53,7 +53,9 @@ const registerForEvent = async (req, res) => {
       return res.status(400).json({ message: "Registration closed, event capacity reached." });
     }
 
-    event.registrations.push({ name, email, phone });
+    const { name, email } = req.user; 
+
+    event.registrations.push({ name, email });
     await event.save();
 
     res.status(200).json({ message: "Registration successful" });
@@ -81,8 +83,7 @@ const downloadRegistrations = async (req, res) => {
 
     const registrations = event.registrations.map(reg => ({
       name: reg.name,
-      email: reg.email,
-      phone: reg.phone
+      email: reg.email
     }));
 
     const csv = parse(registrations);
@@ -100,7 +101,7 @@ const downloadRegistrations = async (req, res) => {
 // Delete an event
 const deleteEvent = async (req, res) => {
   try {
-    const eventId = req.params.id;
+    const eventId =   req.params.id;
 
     const event = await Event.findById(eventId);
     if (!event) {
