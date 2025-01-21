@@ -1,6 +1,6 @@
 const express = require("express");
 const { body, validationResult } = require("express-validator");
-const { signup, login, forgotPassword, resetPassword } = require("../controllers/userController"); // Import the controller functions
+const { signup, login, forgotPassword, resetPassword , logout , deleteAccount} = require("../controllers/userController"); 
 
 const router = express.Router();
 
@@ -25,6 +25,12 @@ router.post(
   ],
   login 
 );
+
+// Logout Route
+router.post("/logout", logout);
+
+// Delete Account Route
+router.post("/delete-account", deleteAccount);
 
 // Forgot Password Route
 router.post("/forgot-password", forgotPassword);

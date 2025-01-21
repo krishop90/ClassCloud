@@ -69,6 +69,39 @@ const login = async (req, res) => {
   }
 };
 
+// Logout Controller
+const logout = async (req, res) => {
+  try {
+    req.user = null;
+    res.status(200).json({ message: "Logout successful" });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Delete Account Controller
+const deleteAccount = async (req, res) => {
+  try {
+    const { userId } = req.body; // Assuming userId is provided in the request body
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    // Find and delete the user by their ID
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error in deleteAccount controller:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
 // Forgot Password Controller
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
@@ -254,6 +287,8 @@ const getFriendsList = async (req, res) => {
 module.exports = {
   signup,
   login,
+  logout,
+  deleteAccount,
   forgotPassword,
   resetPassword,
   sendFriendRequest,
