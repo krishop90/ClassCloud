@@ -1,52 +1,89 @@
 const express = require("express");
 const http = require("http");
-const socketIo = require("socket.io"); 
+const socketIo = require("socket.io");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
+const axios = require("axios");
 const profileRoutes = require("./routes/profileRoutes");
 const authRoutes = require("./routes/authRoutes");
 const friendRoutes = require("./routes/friendRoutes");
-const videoRoutes = require("./routes/videoRoutes"); 
+const videoRoutes = require("./routes/videoRoutes");
 const historyRoutes = require("./routes/historyRoutes");
 const noteRoutes = require("./routes/noteRoutes");
-const communityRoutes = require("./routes/communityRoutes"); 
+const communityRoutes = require("./routes/communityRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const workRoutes = require("./routes/workRoutes");
-const activityRoutes = require('./routes/activityRoutes');
+const activityRoutes = require("./routes/activityRoutes");
+const chatbotRoutes = require("./routes/chatbotRoutes");
+const FAQ = require("./models/faqModel"); // Import FAQ model
+const ChatHistory = require("./models/chatHistoryModel"); // Import Chat History model
+
+
 
 
 const path = require("path");
-const cors = require('cors');
+const cors = require("cors");
 
 const app = express();
 const port = process.env.PORT || 5001;
 app.use(cors());
-
 app.use(express.json());
 
 // Socket.io setup
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:3000', // Frontend URL
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
-    credentials: true
-  }
+    origin: "http://localhost:3000", // Frontend URL
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true,
+  },
 });
 
-io.on("connection", (socket) => {  
+io.on("connection", (socket) => {
   console.log("New client connected");
 
-  // When a user joins a community, join the corresponding room
+  // Real-time chatbot integration
+  socket.on("askChatbot", async (message) => {
+    try {
+      const faq = await FAQ.findOne({ question: message });
+      if (faq) {
+        return socket.emit("botReply", faq.answer);
+      }
+
+      const response = await axios.post(
+        "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
+        {
+          contents: [{ role: "user", parts: [{ text: message }] }],
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          params: { key: process.env.GEMINI_API_KEY },
+        }
+      );
+
+      const botReply =
+        response.data.candidates[0]?.content?.parts[0]?.text ||
+        "I couldn't find an answer.";
+
+      await ChatHistory.create({ userMessage: message, botReply });
+
+      socket.emit("botReply", botReply);
+    } catch (error) {
+      console.error("Chatbot Error:", error);
+      socket.emit("botReply", "Sorry, something went wrong.");
+    }
+  });
+
+  // Community chat features
   socket.on("joinCommunity", (communityId, username) => {
     console.log(`${username} joined the ${communityId} room`);
-    socket.join(communityId); 
+    socket.join(communityId);
   });
 
   socket.on("sendMessage", (communityId, message) => {
     console.log(`Sending message to ${communityId} room: ${message}`);
-    io.to(communityId).emit("receiveMessage", message);  // Send to the specific community room
+    io.to(communityId).emit("receiveMessage", message);
   });
 
   socket.on("disconnect", () => {
@@ -55,7 +92,7 @@ io.on("connection", (socket) => {
 });
 
 // Route Middleware
-app.use("/api/community", communityRoutes); 
+app.use("/api/community", communityRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", authRoutes);
 app.use("/api/friends", friendRoutes);
@@ -66,9 +103,10 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/events", eventRoutes);
 app.use("/api/work", workRoutes);
 app.use("/api/user", activityRoutes);
+app.use("/api/chatbot", chatbotRoutes);
 
-//frontend
-app.use(express.static(path.join(__dirname, 'frontend', 'public')));
+// Frontend
+app.use(express.static(path.join(__dirname, "frontend", "public")));
 
 // MongoDB Connection
 mongoose
