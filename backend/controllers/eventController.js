@@ -160,8 +160,8 @@ const searchEvents = async (req, res) => {
     }
 
     const events = await Event.find(query)
-      .populate("createdBy", "username email") // Include creator details
-      .sort({ date: 1 }); // Sort by date (earliest first)
+      .populate("createdBy", "username email") 
+      .sort({ date: 1 }); 
 
     res.status(200).json(events);
   } catch (error) {

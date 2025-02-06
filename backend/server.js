@@ -15,8 +15,8 @@ const eventRoutes = require("./routes/eventRoutes");
 const workRoutes = require("./routes/workRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
-const FAQ = require("./models/faqModel"); // Import FAQ model
-const ChatHistory = require("./models/chatHistoryModel"); // Import Chat History model
+const FAQ = require("./models/faqModel"); 
+const ChatHistory = require("./models/chatHistoryModel"); 
 
 
 
@@ -111,7 +111,7 @@ app.use(express.static(path.join(__dirname, "frontend", "public")));
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB Educonnect successfully"))
+  .then(() => console.log("Connected to MongoDB successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Root Route
