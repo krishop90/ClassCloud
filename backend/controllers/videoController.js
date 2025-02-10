@@ -2,6 +2,7 @@ const Video = require("../models/videoModel");
 const generateThumbnail = require("../utils/thumbnailGenerator");
 const ffmpeg = require("fluent-ffmpeg");
 
+
 // Restricted words
 const restrictedWords = ["movie", "series" , "episode" , "season"];
 
@@ -76,7 +77,6 @@ const getAllVideos = async (req, res) => {
 const searchLectures = async (req, res) => {
   try {
     const { query, uploadedBy } = req.query;
-
     const filter = {};
 
     if (query) {
@@ -84,7 +84,7 @@ const searchLectures = async (req, res) => {
     }
 
     if (uploadedBy) {
-      const user = await User.findOne({ name: { $regex: uploadedBy, $options: "i" } });
+      const user = await User.findOne({ username: { $regex: uploadedBy, $options: "i" } });
       if (user) {
         filter.uploadedBy = user._id;
       } else {
@@ -92,8 +92,7 @@ const searchLectures = async (req, res) => {
       }
     }
 
-    const lectures = await Lecture.find(filter).populate("uploadedBy", "name email");
-
+    const lectures = await Video.find(filter).populate("uploadedBy", "username email");
     res.status(200).json(lectures);
   } catch (error) {
     res.status(500).json({ message: "Error searching lectures", error: error.message });

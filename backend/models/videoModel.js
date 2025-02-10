@@ -9,4 +9,4 @@ const videoSchema = new mongoose.Schema({
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 
-module.exports = mongoose.model("Video", videoSchema); 
+module.exports = mongoose.model("Video", videoSchema);
