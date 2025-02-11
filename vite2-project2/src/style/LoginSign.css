@@ -1,0 +1,38 @@
+.ls-container {
+    width: 400px;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid purple;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 120px;
+}
+
+.ls-container input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid rgb(218, 170, 218);
+    border-radius: 5px;
+}
+
+.ls-container button {
+    width: 95%;
+    padding: 10px;
+    background: #4a63d3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.ls-container p {
+    margin-top: 10px;
+}
+
+.ls-container a {
+    color: #007BFF;
+    text-decoration: none;
+}

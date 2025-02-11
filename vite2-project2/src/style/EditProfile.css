@@ -1,0 +1,85 @@
+.edit-profile-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background: #f8f9fc;
+  padding: 20px;
+  margin-left: 65px;
+}
+
+.edit-profile-form {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  width: 950px;
+  height: 53%;
+  border: 1px solid purple;
+  margin-top: 70px;
+}
+
+input[disabled] {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.input2 {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid rgb(218, 170, 218);
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 14px;
+}
+
+.input2:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  background: #ffffff;
+}
+
+.edit-button {
+  display: block;
+  width: 10%;
+  padding: 12px;
+  background-color: #4a63d3;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  margin-left: 90%;
+  margin-top: 25px;
+}
+
+.edit-button:hover {
+  background-color: #1e40af;
+}
+
+.edit-button:active {
+  background-color: #1c4ed8;
+}
+
+@media (max-width: 600px) {
+  .edit-profile-form {
+    width: 100%;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+

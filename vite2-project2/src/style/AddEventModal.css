@@ -1,0 +1,111 @@
+.full-page-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2); /* Light overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .modal-form-container2 {
+    background: white;
+    padding: 20px;
+    border: 2px solid purple; /* Add border */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow */
+    width: 100%;
+    max-width: 600px;
+    height: 470px;
+    margin-top: 20px;
+  }
+  
+  .modal-header2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-header2 h2 {
+    margin: 0;
+    margin-bottom: 30px;
+  }
+  
+  .modal-header2 .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: black;
+    margin-top: -8px;
+    margin-right: -16px;
+  }
+  
+  .modal-form2 {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: -20px;
+  } 
+
+  .input-row {
+    display: flex;
+    gap: 20px; /* Space between inputs */
+    justify-content: space-between;
+    width: 98%;
+  }
+  
+  .input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .modal-form2 label {
+    margin-top: 10px;
+  }
+  
+  .modal-form2 input,
+  .modal-form2 textarea {
+    width: 96%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid rgb(218, 170, 218);
+    border-radius: 5px;
+  }
+  
+  .modal-buttons2 {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    margin-right: 20px;
+    gap: 5px;
+  }
+  
+  .modal-buttons2 .save-btn {
+    background-color: #4a63d3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-right: 250px;
+    margin-left: 0px;
+  }
+  
+  .modal-buttons2 .cancel-btn {
+    background-color: #ff4444;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 180px;
+  }
+
+
+  
+  

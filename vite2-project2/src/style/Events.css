@@ -1,0 +1,133 @@
+.events-container {
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  width: 97%;
+}
+
+.events-container h1 {
+  margin-bottom: 10px;
+  font-size: 24px;
+  margin-left: 90px;
+  margin-top: 60px;
+}
+
+.events-container p {
+  margin-bottom: 20px;
+  color: #666;
+  margin-left: 90px;
+}
+
+.events-container button {
+  margin-bottom: 20px;
+  color: white;
+  background-color: #4a63d3;
+  margin-left: 90px;
+  border-radius: 10px;
+  padding: 12px 25px;
+  border-color: white;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+}
+
+.event-box {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-left: 90px;
+  margin-bottom: 20px;
+}
+
+.event-card {
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+.main-card {
+  display: flex;
+  gap: 20px;
+}
+
+.sidebox {
+  border: 1px solid #666;
+  width: 12%;
+  border-radius: 5px;
+  background-color: #d4d4f1;
+  margin-bottom: 20px;
+}
+
+.sidebox h2 {
+  margin-left: 20px;
+  font-size: larger;
+}
+
+.sidebox p {
+  margin-left: 20px;
+  color: #939292;
+}
+
+.event-details2 {
+  border: 1px solid #666;
+  width: 90%;
+  border-radius: 5px;
+  padding: 2px;
+  height: 140px;
+  margin-bottom: 20px;
+}
+
+.event-details2 h2 {
+  margin-left: 40px;
+  margin-top: 18px;
+}
+
+.event-details2 .event-meta {
+  display: flex;
+}
+
+.event-details2 span {
+  margin-left: 5px;
+  font-size: 17px;
+  margin-bottom: 2px;
+}
+
+.event-details2 p {
+  margin-left: 40px;
+  font-size: 16px;
+}
+
+.event-details2 .event-icon {
+  margin-top: -5px;
+  margin-left: 40px;
+}
+
+.event-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0px;
+  margin-left: -50px;
+}
+
+.register-btn {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 50px;
+}
+
+.download-button {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+.add-evnt-btn {
+  margin-top: 60px;
+}
+
+.register-button.registered {
+  background-color: gray !important;
+  cursor: not-allowed;
+  margin-right: 40px;
+}

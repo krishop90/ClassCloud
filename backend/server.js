@@ -18,9 +18,6 @@ const chatbotRoutes = require("./routes/chatbotRoutes");
 const FAQ = require("./models/faqModel"); 
 const ChatHistory = require("./models/chatHistoryModel"); 
 
-
-
-
 const path = require("path");
 const cors = require("cors");
 
@@ -33,7 +30,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000", // Frontend URL
+    origin: "http://localhost:5173", // Frontend URL
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
     credentials: true,
@@ -104,9 +101,14 @@ app.use("/api/events", eventRoutes);
 app.use("/api/work", workRoutes);
 app.use("/api/user", activityRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 
 // Frontend
 app.use(express.static(path.join(__dirname, "frontend", "public")));
+app.use("thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
+
+// Serve thumbnails correctly
+app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 
 // MongoDB Connection
 mongoose

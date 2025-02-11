@@ -1,0 +1,102 @@
+.lectures-container {
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  width: 97%;
+}
+
+.lectures-container h1 {
+  margin-bottom: 10px;
+  font-size: 24px;
+  margin-left: 90px;
+  margin-top: 60px;
+}
+
+.lectures-container p {
+  margin-bottom: 20px;
+  color: #666;
+  margin-left: 90px;
+}
+
+.lectures-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-lectures-btn {
+  padding: 10px 15px;
+  background-color: #4a63d3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 30px;
+}
+
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: left;
+  margin-left: 90px;
+}
+
+.lecture-card {
+  background-color: #fff;
+  border: 1px solid rgb(22, 22, 251);
+  border-radius: 8px;
+  width: calc(33.333% - 20px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lecture-image {
+  background-color: #e0e0e0;
+  height: 150px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+
+}
+
+.lecture-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.lecture-details {
+  padding: 15px;
+}
+
+.lecture-details h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.lecture-details p {
+  margin: 0 0 15px;
+  color: #666;
+}
+
+.lecture-meta {
+  font-size: 14px;
+  color: #999;
+  display: flex;
+  gap: 10px;
+}
+
+/*@media (max-width: 768px) {
+    .lecture-card {
+      width: calc(50% - 20px);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .lecture-card {
+      width: 100%;
+    }
+  }*/

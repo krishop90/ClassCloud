@@ -1,0 +1,171 @@
+/* Starry Background Animation */
+@keyframes moveStars {
+  0% {
+      background-position: 0 0;
+  }
+  100% {
+      background-position: 1000px 1000px;
+  }
+}
+
+.sidebar {
+  width: 60px;
+  background-color: #adade2; /* Keep original theme color */
+  height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+  border-radius: 10px;
+  position: fixed;
+  top: 70px;
+  left: 15px;
+  z-index: 5;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.2) 1px, transparent 1px), 
+                    url('https://www.transparenttextures.com/patterns/stardust.png'); /* Star background */
+  background-size: 10px 10px, cover; /* Increase density of stars */
+  animation: moveStars 100s linear infinite;
+}
+
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  margin-top: -10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.sidebar nav ul li {
+  margin: 5px 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  color: #555;
+  position: relative;
+  transition: background-color 0.3s, color 0.3s, transform 0.2s;
+}
+
+.icon-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  height: 100%;
+}
+
+.sidebar nav ul li.active {
+  background-color: #000;
+  color: #fff;
+}
+
+.sidebar nav ul li.active .icon-link {
+  color: #fff;
+}
+
+.sidebar nav ul li:hover {
+  background-color: #000;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.sidebar nav ul li:hover .icon-link {
+  color: #fff;
+}
+
+.sidebar nav ul li.active:hover {
+  background-color: #000;
+  color: #fff;
+  transform: none;
+}
+
+/* New CSS for the name */
+.sidebar nav ul li .icon-name {
+  position: absolute;
+  left: 60px; /* Position the name to the right of the icon */
+  top: 50%; /* Vertically center the name */
+  transform: translateY(-50%); /* Fine-tune vertical centering */
+  background-color: black; /* Black background */
+  color: white; /* White text color */
+  padding: 5px 10px; /* Some padding for spacing */
+  font-size: 14px; /* Adjust font size */
+  border-radius: 5px; /* Rounded corners */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s, left 0.3s; /* Smooth transition */
+}
+
+.sidebar nav ul li:hover .icon-name {
+  opacity: 1;
+  visibility: visible;
+  left: 70px; /* Slide it slightly to the right on hover */
+}
+
+.settings-container {
+  margin-top: auto;
+  padding-bottom: 30px;
+  position: relative; /* Ensure absolute positioning for the name */
+}
+
+.settings {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  color: #555;
+  transition: background-color 0.3s, color 0.3s, transform 0.2s;
+  position: relative; /* Ensures that the name can be positioned relative to the icon */
+}
+
+.settings .icon-name {
+  position: absolute;
+  left: 60px; /* Position the name to the right of the icon */
+  top: 50%; /* Vertically center the name */
+  transform: translateY(-50%); /* Fine-tune vertical centering */
+  background-color: black; /* Black background */
+  color: white; /* White text color */
+  padding: 5px 10px; /* Padding for spacing */
+  font-size: 14px; /* Adjust font size */
+  border-radius: 5px; /* Rounded corners */
+  opacity: 0; /* Initially hidden */
+  visibility: hidden; /* Initially hidden */
+  transition: opacity 0.3s, visibility 0.3s, left 0.3s; /* Smooth transition */
+}
+
+.settings.active {
+  background-color: #000;
+  color: #fff;
+}
+
+.settings:hover .icon-name {
+  opacity: 1;
+  visibility: visible;
+  left: 70px; /* Slide it slightly to the right on hover */
+}
+
+.settings:hover {
+  background-color: #000;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.settings.active:hover {
+  background-color: #000;
+  color: #fff;
+  transform: none;
+}

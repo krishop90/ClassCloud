@@ -4,23 +4,24 @@ const path = require('path');
 ffmpeg.setFfmpegPath('C:/ffmpeg-master-latest-win64-gpl-shared/bin/ffmpeg.exe');
 ffmpeg.setFfprobePath('C:/ffmpeg-master-latest-win64-gpl-shared/bin/ffprobe.exe');
 
-
 const generateThumbnail = (videoPath, thumbnailDir) => {
   return new Promise((resolve, reject) => {
-    const thumbnailPath = path.join(thumbnailDir, `${Date.now()}.jpg`);
+    const timestamp = Date.now();
+    const thumbnailFilename = `${timestamp}.jpg`;
+    const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
     
     ffmpeg(videoPath)
-      .on('end', () => {
-        resolve(thumbnailPath);  
-      })
-      .on('error', (err) => {
-        reject(err); 
-      })
       .screenshots({
         count: 1,
         folder: thumbnailDir,
-        filename: `${Date.now()}.jpg`, 
+        filename: thumbnailFilename,
         size: '320x240',
+      })
+      .on('end', () => {
+        resolve(thumbnailPath);
+      })
+      .on('error', (err) => {
+        reject(err);
       });
   });
 };

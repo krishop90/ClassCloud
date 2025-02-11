@@ -2,6 +2,7 @@ const express = require("express");
 const { body, validationResult } = require("express-validator");
 const { protect } = require("../middleware/authMiddleware");
 const User = require("../models/userModel");
+const { deleteAccount } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -39,5 +40,21 @@ router.put(
     }
   }
 );
+
+// Get Profile Route
+router.get("/me", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Add the delete route
+router.delete("/delete-profile", protect, deleteAccount);
 
 module.exports = router;

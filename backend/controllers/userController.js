@@ -80,27 +80,33 @@ const logout = async (req, res) => {
 };
 
 // Delete Account Controller
+// Delete Account Controller
 const deleteAccount = async (req, res) => {
   try {
-    const { userId } = req.body; // Assuming userId is provided in the request body
+    const userId = req.user.id; // Get user ID from the authenticated token
 
+    // Ensure userId exists
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
     }
 
-    // Find and delete the user by their ID
+    // Find the user and delete by their ID
     const user = await User.findByIdAndDelete(userId);
 
+    // If user not found, return an error
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // Respond with a success message
     return res.status(200).json({ message: "Account deleted successfully" });
   } catch (error) {
     console.error("Error in deleteAccount controller:", error);
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+
 
 // Forgot Password Controller
 const forgotPassword = async (req, res) => {
