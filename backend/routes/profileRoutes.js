@@ -3,6 +3,7 @@ const { body, validationResult } = require("express-validator");
 const { protect } = require("../middleware/authMiddleware");
 const User = require("../models/userModel");
 const { deleteAccount } = require("../controllers/userController");
+const { getProfile } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -53,6 +54,8 @@ router.get("/me", protect, async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
+
+router.get("/" , protect, getProfile);
 
 // Add the delete route
 router.delete("/delete-profile", protect, deleteAccount);

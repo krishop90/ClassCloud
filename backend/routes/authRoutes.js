@@ -2,8 +2,15 @@ const express = require("express");
 const { body, validationResult } = require("express-validator");
 const { protect } = require("../middleware/authMiddleware");
 const { signup, login, forgotPassword, resetPassword , logout , deleteAccount} = require("../controllers/userController"); 
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "30d", // Token expiration time
+  });
+};
 
 // Signup Route
 router.post(

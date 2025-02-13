@@ -3,11 +3,10 @@ import "../style/AddLectureModal.css";
 import axios from "axios";
 
 const AddLectureModal = ({ onClose, onAddLecture }) => {
-  const [lectureName, setLectureName] = useState("");
-  const [description, setDescription] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [newLecture, setNewLecture] = useState({ title: "", description: "" });
+  const [videoFile, setVideoFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [videoDuration, setVideoDuration] = useState("");
-  const [loading, setLoading] = useState(false); // For loading state
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -20,7 +19,7 @@ const AddLectureModal = ({ onClose, onAddLecture }) => {
       return;
     }
 
-    setSelectedFile(file);
+    setVideoFile(file);
 
     // Extract video duration
     const videoURL = URL.createObjectURL(file);
@@ -31,7 +30,7 @@ const AddLectureModal = ({ onClose, onAddLecture }) => {
       const durationSeconds = video.duration;
       if (durationSeconds > 45 * 60) {
         alert("Video duration exceeds 45 minutes. Please upload a shorter video.");
-        setSelectedFile(null);
+        setVideoFile(null);
         return;
       }
       setVideoDuration(formatDuration(durationSeconds));
@@ -47,37 +46,12 @@ const AddLectureModal = ({ onClose, onAddLecture }) => {
       .padStart(2, "0")}`;
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!lectureName || !selectedFile) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("title", lectureName);
-    formData.append("description", description);
-    formData.append("video", selectedFile);
-
-    setLoading(true);
-
-    try {
-      const token = localStorage.getItem("authToken");
-      localStorage.setItem("authToken", token);
-      const response = await axios.post("http://localhost:5001/api/videos/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-      onAddLecture(response.data, selectedFile);
-      onClose();
-    } catch (error) {
-      console.error("Error uploading lecture", error);
-      alert("Error uploading lecture, please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (uploading) return;
+    setUploading(true);
+    await onAddLecture(newLecture, videoFile);
+    setUploading(false);
   };
 
   return (
@@ -92,15 +66,15 @@ const AddLectureModal = ({ onClose, onAddLecture }) => {
           <label>Lecture Name:</label>
           <input
             type="text"
-            value={lectureName}
-            onChange={(e) => setLectureName(e.target.value)}
+            value={newLecture.title}
+            onChange={(e) => setNewLecture({ ...newLecture, title: e.target.value })}
             required
           />
 
           <label>Description:</label>
           <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={newLecture.description}
+            onChange={(e) => setNewLecture({ ...newLecture, description: e.target.value })}
             required
           />
 
@@ -115,14 +89,14 @@ const AddLectureModal = ({ onClose, onAddLecture }) => {
           {videoDuration && <p>Video Length: {videoDuration}</p>}
 
           <div className="modal-buttons">
-            <button type="submit" className="save-btn" disabled={loading}>
-              {loading ? "Uploading..." : "Save"}
+            <button type="submit" className="save-btn" disabled={uploading}>
+              {uploading ? "Uploading..." : "Save"}
             </button>
             <button
               type="button"
               className="cancel-btn"
               onClick={onClose}
-              disabled={loading}
+              disabled={uploading}
             >
               Cancel
             </button>

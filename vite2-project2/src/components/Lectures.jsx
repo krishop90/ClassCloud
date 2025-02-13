@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "../style/Lectures.css";
 import AddLectureModal from "./AddLectureModal";
@@ -10,6 +10,7 @@ const Lectures = () => {
   const [selectedLecture, setSelectedLecture] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState(null);
+  const isSubmitting = useRef(false);
 
   // Inline Navigation component (can be customized)
   const Navigation = () => {
@@ -36,13 +37,29 @@ const Lectures = () => {
       const response = await axios.get("/api/videos", {
         params: { query: searchQuery },
       });
-      setLectures(Array.isArray(response.data) ? response.data : []);
+      if (Array.isArray(response.data)) {
+        // Log raw response before filtering
+        console.log("Raw lectures response:", response.data);
+        const uniqueLectures = new Map();
+        response.data.forEach((lecture) => {
+          uniqueLectures.set(lecture._id, lecture);
+        });
+        const filtered = Array.from(uniqueLectures.values());
+        console.log("Filtered lectures:", filtered);
+        setLectures(filtered);
+      } else {
+        setLectures([]);
+      }
     } catch (error) {
       console.error("Error fetching lectures", error);
     }
   };
 
   const addLecture = async (newLecture, videoFile) => {
+    if (isSubmitting.current) return; // prevent duplicate calls
+    isSubmitting.current = true;
+    console.log("Starting upload for:", newLecture);
+
     const formData = new FormData();
     formData.append("title", newLecture.title);
     formData.append("description", newLecture.description);
@@ -50,22 +67,21 @@ const Lectures = () => {
 
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.post("http://localhost:5001/api/videos/upload", formData, {
+      const response = await axios.post("/api/videos/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: token ? `Bearer ${token}` : "",
         },
       });
-
-      if (response.status === 201) {
-        setLectures((prevLectures) => [...prevLectures, response.data]);
-        setIsModalOpen(false);
-      } else {
-        alert("Failed to upload the lecture");
-      }
+      console.log("Upload response:", response.data);
+      // Re-fetch lectures after upload
+      await fetchLectures();
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Error adding lecture", error);
       alert("Error uploading lecture, please try again.");
+    } finally {
+      isSubmitting.current = false;
     }
   };
 
@@ -133,3 +149,4 @@ const Lectures = () => {
 };
 
 export default Lectures;
+

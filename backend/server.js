@@ -18,6 +18,7 @@ const chatbotRoutes = require("./routes/chatbotRoutes");
 const FAQ = require("./models/faqModel"); 
 const ChatHistory = require("./models/chatHistoryModel"); 
 
+
 const path = require("path");
 const cors = require("cors");
 
@@ -102,6 +103,8 @@ app.use("/api/work", workRoutes);
 app.use("/api/user", activityRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
+
+
 
 // Frontend
 app.use(express.static(path.join(__dirname, "frontend", "public")));

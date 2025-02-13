@@ -38,35 +38,44 @@ const Events = () => {
     setRegisteredEvents(savedRegisteredEvents);
   }, [searchQuery]);
 
-  // Retrieve user info from localStorage
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
+      try {
+        const response = await axios.get("http://localhost:5001/api/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("Fetched profile:", response.data);
+        setUser(response.data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+    fetchProfile();
   }, []);
 
   // Function to download registration sheet (only accessible to event creator)
-  const handleDownload = async (eventId, eventCreatorId) => {
-    const token = localStorage.getItem("authToken");
-    const userId = user?._id || user?.id;
+  const handleDownload = async (eventId, eventCreator) => {
+    const userId = user?._id;
+    const creatorId = typeof eventCreator === "object" && eventCreator._id ? eventCreator._id : eventCreator;
+    console.log("User ID:", userId);
+    console.log("Event Creator ID:", creatorId);
 
-    if (userId !== eventCreatorId) {
+    if (String(userId) !== String(creatorId)) {
       alert("Only the event creator can download the registration sheet.");
       return;
     }
 
     try {
-      const response = await axios.get(
-        `http://localhost:5001/api/events/download/${eventId}`,
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-          responseType: "blob",
-        }
-      );
-      const url = window.URL.createObjectURL(
-        new Blob([response.data], { type: "text/csv" })
-      );
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get(`http://localhost:5001/api/events/download/${eventId}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: "text/csv" }));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", "registrations.csv");
@@ -184,10 +193,7 @@ const Events = () => {
                     <span>{event.capacity}</span>
                   </div>
                   <div className="event-actions">
-                    <button
-                      onClick={() => handleDownload(event._id || event.id, event.createdBy._id || event.createdBy)}
-                      className="download-button"
-                    >
+                    <button onClick={() => handleDownload(event._id, event.createdBy)}>
                       Download File
                     </button>
                     {!isCreator && (

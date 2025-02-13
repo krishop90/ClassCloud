@@ -13,7 +13,6 @@ const Dashboard = () => {
     }
   }, []);
 
-
   // Fetch tasks from localStorage when the component loads
   useEffect(() => {
     const savedTasks = localStorage.getItem("tasks");

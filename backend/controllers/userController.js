@@ -4,6 +4,12 @@ const {validationResult} = require("express-validator");
 const nodemailer = require("nodemailer");
 const User = require("../models/userModel");
 
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "30d",
+  });
+};
+
 // Signup Controller
 const signup = async (req, res) => {
   const errors = validationResult(req);
@@ -43,29 +49,18 @@ const signup = async (req, res) => {
 // Login Controller
 const login = async (req, res) => {
   const { email, password } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+  const user = await User.findOne({ email });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  if (user && (await bcrypt.compare(password, user.password))) {
     res.json({
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
     });
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
+  } else {
+    res.status(401).json({ message: "Invalid email or password" });
   }
 };
 
@@ -106,7 +101,18 @@ const deleteAccount = async (req, res) => {
   }
 };
 
-
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("name email username avatar");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Forgot Password Controller
 const forgotPassword = async (req, res) => {
@@ -294,6 +300,7 @@ module.exports = {
   signup,
   login,
   logout,
+  getProfile,
   deleteAccount,
   forgotPassword,
   resetPassword,

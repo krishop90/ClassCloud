@@ -1,31 +1,32 @@
 const Event = require("../models/eventModel");
 const { parse } = require('json2csv');
 const {fs} = require('fs');
+const User = require("../models/userModel");
 // Create a new event
 const createEvent = async (req, res) => {
-    const { title, description, venue, date, time , capacity} = req.body;
+  const { title, description, venue, date, time, capacity } = req.body;
 
-    if (!title || !description || !venue || !date || !time || !capacity) {
-        return res.status(400).json({ message: 'All fields are required.' });
-    }
+  if (!title || !description || !venue || !date || !time || !capacity) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
 
-    try {
-        const newEvent = new Event({
-            title,
-            description,
-            venue,
-            date,
-            time,
-            capacity, 
-            createdBy: req.user.id
-        });
+  try {
+    const newEvent = new Event({
+      title,
+      description,
+      venue,
+      date,
+      time,
+      capacity,
+      createdBy: req.user._id  // Updated to use _id instead of id
+    });
 
-        await newEvent.save();
-        res.status(201).json(newEvent);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error creating event', error: error.message });
-    }
+    await newEvent.save();
+    res.status(201).json(newEvent);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error creating event', error: error.message });
+  }
 };
 
 // Get all events
@@ -42,22 +43,28 @@ const getAllEvents = async (req, res) => {
 // Register for an event
 const registerForEvent = async (req, res) => {
   try {
-    const { eventId } = req.params; // Get the event ID from route parameters
-
+    const { eventId } = req.params;
     const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-
     if (event.registrations.length >= event.capacity) {
-      return res.status(400).json({ message: "Registration closed, event capacity reached." });
+      return res.status(400).json({ message: "Event capacity reached." });
     }
 
-    const { name, email } = req.user; 
-
-    event.registrations.push({ name, email });
+    // Fetch full user details from DB if needed (usually req.user was set in auth middleware)
+    const { name, email } = req.user;
+    if (!email) {
+      // As a fallback, fetch full profile from DB
+      const fullUser = await User.findById(req.user._id).select("name email");
+      if (!fullUser || !fullUser.email) {
+        return res.status(500).json({ message: "Could not retrieve user's email." });
+      }
+      req.user = fullUser;
+    }
+    
+    event.registrations.push({ name: req.user.name, email: req.user.email });
     await event.save();
-
     res.status(200).json({ message: "Registration successful" });
   } catch (error) {
     console.error("Error registering for event:", error);
@@ -65,36 +72,39 @@ const registerForEvent = async (req, res) => {
   }
 };
 
-
-
 // download registration sheet
 const downloadRegistrations = async (req, res) => {
   try {
-    const eventId = req.params.id;
-    const event = await Event.findById(eventId);
+    // Remove populate since registrations.user is not in the schema.
+    const event = await Event.findById(req.params.id);
 
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
 
-    if (event.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Unauthorized' });
+    if (String(event.createdBy) !== String(req.user._id)) {
+      return res.status(403).json({ message: "Unauthorized" });
     }
 
-    const registrations = event.registrations.map(reg => ({
-      name: reg.name,
-      email: reg.email
-    }));
+    const csvRows = [];
+    // Add header row with both name and email
+    csvRows.push("Name,Email");
 
-    const csv = parse(registrations);
+    event.registrations.forEach((reg) => {
+      // Directly use the stored fields since registration objects have name and email.
+      const name = reg.name;
+      const email = reg.email;
+      csvRows.push(`${name},${email}`);
+    });
 
-    res.header('Content-Type', 'text/csv');
-    res.attachment('registrations.csv');
-    res.send(csv);
+    const csvData = csvRows.join("\n");
 
+    res.header("Content-Type", "text/csv");
+    res.attachment("registrations.csv");
+    return res.send(csvData);
   } catch (error) {
     console.error("Error downloading registration sheet:", error);
-    res.status(500).json({ message: 'Error downloading registration sheet', error: error.message });
+    return res.status(500).json({ message: "Error downloading registration sheet" });
   }
 };
 
@@ -108,7 +118,7 @@ const deleteEvent = async (req, res) => {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    if (event.createdBy.toString() !== req.user._id.toString()) {
+    if (String(event.createdBy) !== String(req.user._id)) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
@@ -170,5 +180,4 @@ const searchEvents = async (req, res) => {
   }
 };
 
-
-module.exports = { createEvent, getAllEvents, registerForEvent , downloadRegistrations , deleteEvent , getUpcomingEvents , searchEvents}; 
+module.exports = { createEvent, getAllEvents, registerForEvent , downloadRegistrations , deleteEvent , getUpcomingEvents , searchEvents};

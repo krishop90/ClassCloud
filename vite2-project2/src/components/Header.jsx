@@ -35,6 +35,7 @@ const Header = () => {
 
   // Handle delete profile
   const handleDeleteProfile = async () => {
+    const isAuthenticated = Boolean(localStorage.getItem("authToken"));
     if (!isAuthenticated) {
       alert("Please login first.");
       return;
@@ -74,6 +75,7 @@ const Header = () => {
 
   // Handle log out
   const handleLogout = () => {
+    const isAuthenticated = Boolean(localStorage.getItem("authToken"));
     if (!isAuthenticated) {
       alert("Please login first.");
       return;
@@ -95,6 +97,7 @@ const Header = () => {
               to="/edit-profile"
               className="dropdown-link"
               onClick={() => {
+                const isAuthenticated = Boolean(localStorage.getItem("authToken"));
                 if (!isAuthenticated) {
                   alert("Please login first.");
                   return;
