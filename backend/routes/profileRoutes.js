@@ -4,6 +4,7 @@ const { protect } = require("../middleware/authMiddleware");
 const User = require("../models/userModel");
 const { deleteAccount } = require("../controllers/userController");
 const { getProfile } = require("../controllers/userController");
+const { updatePassword } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -59,5 +60,7 @@ router.get("/" , protect, getProfile);
 
 // Add the delete route
 router.delete("/delete-profile", protect, deleteAccount);
+
+router.put("/update-password", protect, updatePassword);
 
 module.exports = router;
