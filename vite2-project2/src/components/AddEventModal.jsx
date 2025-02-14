@@ -3,27 +3,30 @@ import "../style/AddEventModal.css";
 
 const AddEventModal = ({ onClose, onAddEvent }) => {
     const [eventName, setEventName] = useState("");
+    const [date, setDate] = useState("");
     const [time, setTime] = useState("");
     const [location, setLocation] = useState("");
     const [capacity, setCapacity] = useState("");
-    const [description, setDescription] = useState("");
 
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        if (!eventName || !time || !location || !capacity || !description) {
+        if (!eventName || !date || !time || !location || !capacity) {
             alert("Please fill in all fields.");
             return;
         }
 
-        // Fix payload: use keys that backend expects.
+        // Format date and time for backend
+        const formattedDate = new Date(date);
+        formattedDate.setHours(0, 0, 0, 0);
+
         const newEvent = {
-            title: eventName,            // used to be 'name'
-            description,
-            venue: location,             // used to be 'location'
-            time,
-            capacity,
-            date: new Date().toISOString(), // Use ISO for proper parsing
+            title: eventName,
+            venue: location,
+            time: time,
+            capacity: parseInt(capacity),
+            date: formattedDate.toISOString(),
+            description: `Event scheduled for ${date} at ${time}` // Add default description
         };
 
         onAddEvent(newEvent);
@@ -50,12 +53,21 @@ const AddEventModal = ({ onClose, onAddEvent }) => {
                         </div>
                     </div>
 
+                    <label>Date:</label>
+                    <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                    />
+
                     <label>Time:</label>
                     <input
                         type="text"
                         value={time}
                         onChange={(e) => setTime(e.target.value)}
-                        placeholder="E.g., 10:00 AM - 12:00 PM"
+                        placeholder="e.g., 2:00 PM"
                         required
                     />
 
@@ -70,15 +82,9 @@ const AddEventModal = ({ onClose, onAddEvent }) => {
                     <label>Capacity:</label>
                     <input
                         type="number"
+                        min="1"
                         value={capacity}
                         onChange={(e) => setCapacity(e.target.value)}
-                        required
-                    />
-
-                    <label>Description:</label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
                         required
                     />
 

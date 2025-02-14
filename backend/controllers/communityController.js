@@ -275,6 +275,102 @@ const searchCommunities = async (req, res) => {
   }
 };
 
+// Add these new functions
+
+const getMessages = async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const community = await Community.findById(communityId)
+      .populate({
+        path: 'messages.sender',
+        select: 'name'
+      });
+
+    if (!community) {
+      return res.status(404).json({ message: "Community not found" });
+    }
+
+    res.status(200).json(community.messages);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching messages", error: error.message });
+  }
+};
+
+const sendMessage = async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const { text } = req.body;
+    const userId = req.user._id;
+
+    const community = await Community.findById(communityId);
+    if (!community) {
+      return res.status(404).json({ message: "Community not found" });
+    }
+
+    const newMessage = {
+      text,
+      sender: {
+        _id: userId,
+        name: req.user.name
+      },
+      timestamp: new Date()
+    };
+
+    community.messages.push(newMessage);
+    await community.save();
+
+    res.status(201).json(newMessage);
+  } catch (error) {
+    console.error("Error sending message:", error);
+    res.status(500).json({ message: "Error sending message" });
+  }
+};
+
+const joinCommunity = async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const userId = req.user._id; // From auth middleware
+
+    const community = await Community.findById(communityId);
+    
+    if (!community) {
+      return res.status(404).json({ message: "Community not found" });
+    }
+
+    // Check if already a member
+    if (community.members.includes(userId)) {
+      return res.status(400).json({ message: "Already a member" });
+    }
+
+    community.members.push(userId);
+    await community.save();
+
+    res.status(200).json({ 
+      message: "Successfully joined community",
+      community
+    });
+  } catch (error) {
+    console.error("Join community error:", error);
+    res.status(500).json({ message: "Error joining community" });
+  }
+};
+
+const getCommunityById = async (req, res) => {
+  try {
+    const community = await Community.findById(req.params.communityId)
+      .populate('members', 'name')
+      .populate('messages.sender', 'name');
+
+    if (!community) {
+      return res.status(404).json({ message: "Community not found" });
+    }
+
+    res.json(community);
+  } catch (error) {
+    console.error("Error fetching community:", error);
+    res.status(500).json({ message: "Error fetching community" });
+  }
+};
 
 
 module.exports = {
@@ -289,5 +385,9 @@ module.exports = {
   kickUser,
   getCommunityMembers,
   getAllCommunities,
-  searchCommunities
+  searchCommunities,
+  getMessages,
+  sendMessage,
+  joinCommunity,
+  getCommunityById
 };

@@ -37,7 +37,7 @@ body {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-right: -340px;
+  margin-right: 20px;
   margin-top: -20px;
 }
 
@@ -92,7 +92,7 @@ body {
   max-height: 50%;
   margin-top: 85px;
   margin-right: 10px;
-} 
+}
 
 .your-community-section h2 {
   font-size: 20px;
@@ -107,7 +107,7 @@ body {
   gap: 10px;
 }
 
-.your-community-item span{
+.your-community-item span {
   margin-right: 25px;
   margin-left: 7px;
   margin-top: -10px;
@@ -126,11 +126,11 @@ body {
   height: 50px;
   background-color: #ddd;
   border-radius: 50%;
-} 
+}
 
 .chat-btn {
   padding: 5px 10px;
-  background-color: #28a745;
+  background-color: #4CAF50;
   color: white;
   border: none;
   border-radius: 5px;
@@ -140,7 +140,7 @@ body {
 }
 
 .chat-btn:hover {
-  background-color: #1e7e34;
+  background-color: #45a049;
 }
 
 /* Modal Styling */
@@ -151,7 +151,8 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.2); /* Light overlay */
+  background: rgba(0, 0, 0, 0.2);
+  /* Light overlay */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -196,31 +197,31 @@ body {
   flex-direction: column;
 }
 
-.modal-content .co-in{
+.modal-content .co-in {
   display: flex;
   gap: 347px;
   margin-top: -10px;
 }
 
-.modal-content2 .co-in2{
+.modal-content2 .co-in2 {
   display: flex;
   gap: 405px;
   margin-top: -10px;
 }
 
-.modal-content .co-in h2{
+.modal-content .co-in h2 {
   margin-top: 5px;
 }
 
-.modal-content2 .co-in2 h2{
+.modal-content2 .co-in2 h2 {
   margin-top: 5px;
 }
 
-.modal-content .co-in .close-btn{
+.modal-content .co-in .close-btn {
   margin-top: -20px;
 }
 
-.modal-content2 .co-in2 .close-btn{
+.modal-content2 .co-in2 .close-btn {
   margin-top: -20px;
 }
 
@@ -266,8 +267,8 @@ body {
   color: white;
 }
 
-.community-search{
-  width: 300px; 
+.community-search {
+  width: 300px;
   height: 34px;
   padding: 5px 10px;
   border: 1px solid #ccc;
@@ -275,4 +276,31 @@ body {
   font-size: 1rem;
   margin-bottom: 15px;
   margin-left: -230px;
+}
+
+.communities-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.your-communities,
+.all-communities {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.your-communities h2,
+.all-communities h2 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.no-communities {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
 }

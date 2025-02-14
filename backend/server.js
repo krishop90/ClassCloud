@@ -17,15 +17,38 @@ const activityRoutes = require("./routes/activityRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
 const FAQ = require("./models/faqModel"); 
 const ChatHistory = require("./models/chatHistoryModel"); 
+const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
 
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads/notes');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-const path = require("path");
-const cors = require("cors");
+const uploadDirs = ['uploads/notes', 'uploads/videos', 'uploads/avatars'];
+// Create upload directories if they don't exist
+uploadDirs.forEach(dir => {
+  const dirPath = path.join(__dirname, dir);
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+});
 
 const app = express();
 const port = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, filepath) => {
+    const ext = path.extname(filepath).toLowerCase();
+    if (ext === '.pptx') {
+      res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+    }
+  }
+}));
 
 // Socket.io setup
 const server = http.createServer(app);
@@ -103,8 +126,7 @@ app.use("/api/work", workRoutes);
 app.use("/api/user", activityRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
-
-
+app.use('/api/activity', activityRoutes);
 
 // Frontend
 app.use(express.static(path.join(__dirname, "frontend", "public")));

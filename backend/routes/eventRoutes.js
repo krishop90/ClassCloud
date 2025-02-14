@@ -32,7 +32,7 @@ router.delete("/:id", protect, deleteEvent);
 
 
 // Route to get upcoming events
-router.get("/upcoming", eventController.getUpcomingEvents);
+router.get("/upcoming", protect, getUpcomingEvents);
 
 // Search for events
 router.get("/search", protect, searchEvents);

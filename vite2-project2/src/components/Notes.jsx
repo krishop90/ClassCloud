@@ -1,45 +1,129 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "../style/Notes.css";
 
-function NotesApp() {
+const Notes = () => {
   const [notes, setNotes] = useState([]);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [newNote, setNewNote] = useState({
     title: "",
     file: null,
   });
 
-  useEffect(() => {
-    const savedNotes = JSON.parse(localStorage.getItem("notes"));
-    if (savedNotes) {
-      setNotes(savedNotes);
+  // Fetch notes from backend
+  const fetchNotes = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get("/api/notes", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotes(response.data);
+    } catch (error) {
+      console.error("Error fetching notes:", error);
     }
-  }, []);
-
-  useEffect(() => {
-    if (notes.length > 0) {
-      localStorage.setItem("notes", JSON.stringify(notes));
-    }
-  }, [notes]);
-
-  const handleAddNote = () => {
-    const newNoteObject = {
-      id: Date.now(),
-      title: newNote.title,
-      date: new Date().toISOString().split("T")[0],
-      size: `${Math.floor(Math.random() * 10 + 1)}KB`,
-      file: newNote.file ? URL.createObjectURL(newNote.file) : null,
-      fileName: newNote.file ? newNote.file.name : null,
-    };
-    setNotes((prevNotes) => [...prevNotes, newNoteObject]);
-    setNewNote({ title: "", file: null });
-    setIsFormVisible(false);
   };
 
-  const handleDeleteNote = (noteId) => {
-    const updatedNotes = notes.filter((note) => note.id !== noteId);
-    setNotes(updatedNotes);
-    localStorage.setItem("notes", JSON.stringify(updatedNotes));
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  // Handle note upload
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const formData = new FormData();
+      formData.append("title", newNote.title);
+      formData.append("note", newNote.file); // Make sure this matches the field name in multer
+
+      console.log("Uploading file:", newNote.file); // Debug log
+
+      const response = await axios.post("/api/notes/upload", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        }
+      });
+
+      console.log("Upload response:", response); // Debug log
+
+      setNewNote({ title: "", file: null });
+      setIsFormVisible(false);
+      fetchNotes();
+    } catch (error) {
+      console.error("Error uploading note:", error);
+      alert("Failed to upload note: " + (error.response?.data?.message || error.message));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle note download
+  const handleDownload = async (noteId, title) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("Please login to download notes");
+        return;
+      }
+
+      const response = await axios({
+        url: `/api/notes/download/${noteId}`,
+        method: 'GET',
+        responseType: 'blob',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      // Create blob from response
+      const contentType = response.headers['content-type'];
+      const blob = new Blob([response.data], { type: contentType });
+
+      // Get filename from response headers or use title
+      const disposition = response.headers['content-disposition'];
+      const filename = disposition ?
+        disposition.split('filename=')[1].replace(/"/g, '') :
+        title;
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      link.remove();
+
+    } catch (error) {
+      console.error("Download error:", error);
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+        alert(`Download failed: ${error.response.data.message || 'Unknown error'}`);
+      } else {
+        alert("Failed to download file. Please try again.");
+      }
+    }
+  };
+
+  // Handle search
+  const handleSearch = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get(`/api/notes/search?query=${searchQuery}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotes(response.data);
+    } catch (error) {
+      console.error("Error searching notes:", error);
+    }
   };
 
   return (
@@ -47,51 +131,68 @@ function NotesApp() {
       <div className="header-section">
         <div>
           <h1 className="notes-title">Notes</h1>
-          <p className="notes-description">Manage and organize your notes easily.</p>
+          <p className="notes-description">Share and access course notes</p>
         </div>
-        <input type="text" className="notes-search" placeholder="Search" />
-        <button className="add-note-button" onClick={() => setIsFormVisible(true)}>
+        <div className="search-section">
+          <input
+            type="text"
+            className="notes-search"
+            placeholder="Search notes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+          />
+        </div>
+        <button
+          className="add-note-button"
+          onClick={() => setIsFormVisible(true)}
+        >
           + Add Note
         </button>
       </div>
 
       {isFormVisible && (
-        <div className="full-page-modal">
-          <div className="form-container">
-            <div className="n-close">
-            <h2>Add a New Note</h2>
-            <button className="close-btn" onClick={() => setIsFormVisible(false)}>✖</button>
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAddNote();
-              }}
-            >
+        <div className="note-modal">
+          <div className="n-modal-content">
+            <form className="form-container">
+              <div className="n-close">
+                <h2>Upload New Note</h2>
+                <button
+                  className="n-close-button"
+                  onClick={() => setIsFormVisible(false)}
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+
               <div className="form-group">
-                <label htmlFor="title">Title:</label>
+                <label>Title:</label>
                 <input
                   type="text"
-                  id="title"
                   value={newNote.title}
                   onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label htmlFor="file">Attach File:</label>
+                <label>File:</label>
                 <input
                   type="file"
-                  id="file"
                   onChange={(e) => setNewNote({ ...newNote, file: e.target.files[0] })}
+                  required
                 />
               </div>
+
               <div className="form-actions">
-                <button type="submit" className="save-button">
-                  Save
-                </button>
-                <button type="button" className="cancel-button" onClick={() => setIsFormVisible(false)}>
-                  Cancel
+                <button
+                  type="submit"
+                  className="save-button"
+                  disabled={isLoading}
+                  onClick={handleSubmit}
+                >
+                  {isLoading ? "Uploading..." : "Upload"}
                 </button>
               </div>
             </form>
@@ -104,40 +205,23 @@ function NotesApp() {
           <thead>
             <tr>
               <th>Title</th>
+              <th>Uploaded By</th>
               <th>Date</th>
-              <th>Size</th>
-              <th>File</th>
-              <th>Open</th>
-              <th>Delete</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {notes.map((note) => (
-              <tr key={note.id}>
+              <tr key={note._id}>
                 <td>{note.title}</td>
-                <td>{note.date}</td>
-                <td>{note.size}</td>
+                <td>{note.uploadedBy?.username || 'Unknown'}</td>
+                <td>{new Date(note.uploadDate).toLocaleDateString()}</td>
                 <td>
-                  {note.file ? (
-                    <a href={note.file} download={note.fileName} target="_blank" rel="noopener noreferrer">
-                      {note.fileName}
-                    </a>
-                  ) : (
-                    "No file"
-                  )}
-                </td>
-                <td>
-                  {note.file ? (
-                    <button className="open-button" onClick={() => window.open(note.file, "_blank")}>
-                      Open
-                    </button>
-                  ) : (
-                    "No file"
-                  )}
-                </td>
-                <td>
-                  <button className="delete-button" onClick={() => handleDeleteNote(note.id)}>
-                    Delete
+                  <button
+                    className="download-button"
+                    onClick={() => handleDownload(note._id, note.title)}
+                  >
+                    Download
                   </button>
                 </td>
               </tr>
@@ -147,6 +231,6 @@ function NotesApp() {
       </div>
     </div>
   );
-}
+};
 
-export default NotesApp;
+export default Notes;

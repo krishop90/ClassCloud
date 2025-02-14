@@ -16,6 +16,10 @@ const {
   getCommunityMembers,
   getAllCommunities,
   searchCommunities,
+  getMessages,
+  sendMessage,
+  joinCommunity,
+  getCommunityById
 } = require("../controllers/communityController");
 
 // Create community
@@ -51,5 +55,15 @@ router.get("/", getAllCommunities);
 // Search communities
 router.get("/search", protect, searchCommunities);
 
+// Get community messages
+router.get("/:communityId/messages", protect, getMessages);
+
+// Send message to community
+router.post("/:communityId/messages", protect, sendMessage);
+
+// Join community
+router.post('/:communityId/join', protect, joinCommunity);
+
+router.get("/:communityId", protect, getCommunityById);
 
 module.exports = router;

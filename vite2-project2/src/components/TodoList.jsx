@@ -1,11 +1,11 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "../style/TodoList.css";
 
 const TodoList = () => {
     const [tasks, setTasks] = useState(() => {
         const savedTasks = localStorage.getItem("tasks");
         return savedTasks ? JSON.parse(savedTasks) : [];
-      });
+    });
     const [formVisible, setFormVisible] = useState(false);
     const [newTask, setNewTask] = useState({
         name: "",
@@ -17,7 +17,7 @@ const TodoList = () => {
 
     useEffect(() => {
         localStorage.setItem("tasks", JSON.stringify(tasks));
-      }, [tasks]);
+    }, [tasks]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -26,7 +26,7 @@ const TodoList = () => {
 
     const handleAddTask = () => {
         setFormVisible(true);
-    }; 
+    };
 
     const handleSaveTask = () => {
         setTasks([...tasks, newTask]);
@@ -55,6 +55,11 @@ const TodoList = () => {
         const updatedTasks = [...tasks];
         updatedTasks[index].completed = true;
         setTasks(updatedTasks);
+
+        // Delete task after marking as complete with a small delay for visual feedback
+        setTimeout(() => {
+            handleDeleteTask(index);
+        }, 500);
     };
 
     const handleDeleteTask = (index) => {
@@ -62,7 +67,7 @@ const TodoList = () => {
         setTasks(updatedTasks);
     };
 
-    
+
 
     return (
         <div className="todo-container">
@@ -96,23 +101,24 @@ const TodoList = () => {
                             <th>Description</th>
                             <th>Estimation Time</th>
                             <th>Priority</th>
-                            <th>Completed</th>
+                            <th>Status</th>
                             <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody>
                         {tasks.map((task, index) => (
-                            <tr key={index}>
+                            <tr key={index} className={task.completed ? 'completed-row' : ''}>
                                 <td>{task.name}</td>
                                 <td>{task.description}</td>
                                 <td>{task.estimationTime}</td>
                                 <td>{task.priority}</td>
                                 <td>
-                                    {!task.completed && (
-                                        <button onClick={() => handleCompleteTask(index)} className="t-completed">
-                                            Complete
-                                        </button>
-                                    )}
+                                    <input
+                                        type="checkbox"
+                                        checked={task.completed}
+                                        onChange={() => handleCompleteTask(index)}
+                                        className="task-checkbox"
+                                    />
                                 </td>
                                 <td>
                                     <button onClick={() => handleDeleteTask(index)} className="t-delete">Delete</button>
@@ -126,8 +132,8 @@ const TodoList = () => {
                 <div className="full-page-modal">
                     <div className="task-form">
                         <div className="task-menu">
-                        <h3>Add New Task</h3>
-                        <button className="close-btn" onClick={handleCancel}>✖</button>
+                            <h3>Add New Task</h3>
+                            <button className="close-btn" onClick={handleCancel}>✖</button>
                         </div>
                         <div className="form-group">
                             <label>Task Name</label>

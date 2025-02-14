@@ -1,51 +1,81 @@
 const Note = require("../models/noteModel");
+const path = require('path');
+const fs = require('fs');  // Change this from fs.promises
 
 // Upload a note
 const uploadNote = async (req, res) => {
   try {
+
     if (!req.file) {
-      return res.status(400).json({ message: "No note file uploaded." });
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
-    if (!req.user) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
-
-    const note = new Note({
+    const newNote = new Note({
       title: req.body.title,
       filePath: req.file.path,
-      uploadedBy: req.user._id, 
+      originalFilename: req.file.originalname,
+      mimeType: req.file.mimetype,
+      uploadedBy: req.user._id
     });
 
-    await note.save();
-    res.status(201).json(note);
+    await newNote.save();
+    res.status(201).json({ message: "Note uploaded successfully" });
   } catch (error) {
-    console.error("Error during note upload:", error);
-    res.status(500).json({ message: "Note upload failed", error: error.message });
+    console.error("Error in uploadNote:", error); // Detailed error logging
+    res.status(500).json({ 
+      message: "Error uploading note",
+      error: error.message 
+    });
   }
 };
 
-//download notes
 const downloadNote = async (req, res) => {
   try {
-    const noteId = req.params.noteId;
-    const note = await Note.findById(noteId);
-
+    const note = await Note.findById(req.params.id);
     if (!note) {
-      console.error(`Note with ID ${noteId} not found`);
       return res.status(404).json({ message: "Note not found" });
     }
 
-    const filePath = path.resolve(note.filePath);
+    const filePath = path.join(__dirname, '..', note.filePath);
+    
+    // Use synchronous existsSync
     if (!fs.existsSync(filePath)) {
-      console.error(`File not found at path: ${filePath}`);
-      return res.status(404).json({ message: "File not found" });
+      console.error('File not found:', filePath);
+      return res.status(404).json({ message: "File not found on server" });
     }
 
-    res.download(filePath);
+    // Get file extension and set content type
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.ppt': 'application/vnd.ms-powerpoint',
+      '.pdf': 'application/pdf',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.doc': 'application/msword',
+      '.txt': 'text/plain'
+    };
+
+    // Set appropriate headers
+    res.set({
+      'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="${path.basename(filePath)}"`,
+    });
+
+    // Send file
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error('Send file error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ message: "Error sending file" });
+        }
+      }
+    });
+
   } catch (error) {
-    console.error("Error fetching note for download:", error);
-    res.status(500).json({ message: "Failed to fetch note for download" });
+    console.error('Download error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ message: "Server error" });
+    }
   }
 };
 

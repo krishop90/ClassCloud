@@ -56,32 +56,41 @@ const uploadVideo = multer({
   },
 });
 
-// Set up storage for notes
-const noteStorage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/notes"); 
+    cb(null, 'uploads/notes');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); 
-  },
+    // Preserve the original file extension
+    const ext = path.extname(file.originalname);
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
+    cb(null, filename);
+  }
 });
 
-const uploadNote = multer({
-  storage: noteStorage,
-  limits: {
-    fileSize: 1 * 1024 * 1024 * 1024, // 1 GB
-  },
-  fileFilter: (req, file, cb) => {
-    const fileTypes = /pdf|ppt|pptx|txt/; 
-    const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimeType = fileTypes.test(file.mimetype);
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = [
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain'
+  ];
 
-    if (extname && mimeType) {
-      return cb(null, true);
-    } else {
-      cb(new Error("Error: Only PDF and PPT files are allowed"));
-    }
-  },
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type'));
+  }
+};
+
+const uploadNote = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 25 * 1024 * 1024 // 25MB limit
+  }
 });
 
 module.exports = {uploadAvatar, uploadVideo, uploadNote };

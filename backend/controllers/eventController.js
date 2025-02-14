@@ -45,25 +45,28 @@ const registerForEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const event = await Event.findById(eventId);
+    
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
+    
     if (event.registrations.length >= event.capacity) {
-      return res.status(400).json({ message: "Event capacity reached." });
+      return res.status(400).json({ message: "Event capacity reached" });
     }
 
-    // Fetch full user details from DB if needed (usually req.user was set in auth middleware)
-    const { name, email } = req.user;
-    if (!email) {
-      // As a fallback, fetch full profile from DB
-      const fullUser = await User.findById(req.user._id).select("name email");
-      if (!fullUser || !fullUser.email) {
-        return res.status(500).json({ message: "Could not retrieve user's email." });
-      }
-      req.user = fullUser;
+    // Get full user details including email
+    const user = await User.findById(req.user._id).select('name email');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-    
-    event.registrations.push({ name: req.user.name, email: req.user.email });
+
+    // Store both user reference and email
+    event.registrations.push({
+      user: user._id,
+      name: user.name,
+      email: user.email
+    });
+
     await event.save();
     res.status(200).json({ message: "Registration successful" });
   } catch (error) {
@@ -75,8 +78,8 @@ const registerForEvent = async (req, res) => {
 // download registration sheet
 const downloadRegistrations = async (req, res) => {
   try {
-    // Remove populate since registrations.user is not in the schema.
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(req.params.id)
+      .populate('registrations.user', 'email name');
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
@@ -87,18 +90,15 @@ const downloadRegistrations = async (req, res) => {
     }
 
     const csvRows = [];
-    // Add header row with both name and email
     csvRows.push("Name,Email");
 
-    event.registrations.forEach((reg) => {
-      // Directly use the stored fields since registration objects have name and email.
-      const name = reg.name;
-      const email = reg.email;
+    for (const reg of event.registrations) {
+      const name = reg.name || (reg.user && reg.user.name) || 'N/A';
+      const email = reg.email || (reg.user && reg.user.email) || 'N/A';
       csvRows.push(`${name},${email}`);
-    });
+    }
 
     const csvData = csvRows.join("\n");
-
     res.header("Content-Type", "text/csv");
     res.attachment("registrations.csv");
     return res.send(csvData);
@@ -133,19 +133,28 @@ const deleteEvent = async (req, res) => {
 const getUpcomingEvents = async (req, res) => {
   try {
     const today = new Date();
-    const fifteenDaysLater = new Date(today);
-    fifteenDaysLater.setDate(today.getDate() + 15); 
+    today.setHours(0, 0, 0, 0);
 
-    const upcomingEvents = await Event.find({
-      date: { $gte: today, $lte: fifteenDaysLater }
+    const fifteenDaysFromNow = new Date(today);
+    fifteenDaysFromNow.setDate(fifteenDaysFromNow.getDate() + 15);
+    fifteenDaysFromNow.setHours(23, 59, 59, 999);
+
+    console.log("Fetching events between:", today, "and", fifteenDaysFromNow);
+
+    const events = await Event.find({
+      date: {
+        $gte: today,
+        $lte: fifteenDaysFromNow
+      }
     })
-      .sort({ date: 1 })
-      .limit(5); 
+    .sort({ date: 1 })
+    .populate('createdBy', 'username');
 
-    res.json(upcomingEvents);
+    console.log("Found upcoming events:", events);
+    res.json(events);
   } catch (error) {
-    console.error("Error fetching upcoming events:", error);
-    res.status(500).json({ message: "Failed to fetch upcoming events", error: error.message });
+    console.error("Error in getUpcomingEvents:", error);
+    res.status(500).json({ message: "Error fetching upcoming events" });
   }
 };
 

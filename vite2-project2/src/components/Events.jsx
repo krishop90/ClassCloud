@@ -96,17 +96,33 @@ const Events = () => {
       return;
     }
     try {
+      // Ensure all required fields are present
+      const eventData = {
+        title: newEvent.title,
+        description: newEvent.description,
+        date: newEvent.date,
+        time: newEvent.time,
+        venue: newEvent.venue,
+        capacity: newEvent.capacity
+      };
+
       const response = await axios.post(
         "http://localhost:5001/api/events/create",
-        newEvent,
-        { headers: { Authorization: `Bearer ${token}` } }
+        eventData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
+
       // Refresh the events list after creating a new event
       fetchEvents();
       setIsModalOpen(false);
     } catch (error) {
-      console.error("Error creating event:", error);
-      alert("Error creating event. Please try again.");
+      console.error("Error creating event:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Error creating event. Please try again.");
     }
   };
 
