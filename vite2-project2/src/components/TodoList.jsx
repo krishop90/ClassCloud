@@ -2,10 +2,16 @@ import React, { useState, useEffect } from "react";
 import "../style/TodoList.css";
 
 const TodoList = () => {
+    // Get current user ID from localStorage or authentication system
+    const userId = localStorage.getItem("userId") || "guest";  // Replace with actual user ID after authentication
+
     const [tasks, setTasks] = useState(() => {
         const savedTasks = localStorage.getItem("tasks");
-        return savedTasks ? JSON.parse(savedTasks) : [];
+        const parsedTasks = savedTasks ? JSON.parse(savedTasks) : [];
+        // Filter tasks by userId
+        return parsedTasks.filter(task => task.userId === userId);
     });
+
     const [formVisible, setFormVisible] = useState(false);
     const [newTask, setNewTask] = useState({
         name: "",
@@ -29,7 +35,9 @@ const TodoList = () => {
     };
 
     const handleSaveTask = () => {
-        setTasks([...tasks, newTask]);
+        // Add userId to the new task
+        const taskWithUser = { ...newTask, userId };
+        setTasks([...tasks, taskWithUser]);
         setNewTask({
             name: "",
             description: "",
@@ -66,8 +74,6 @@ const TodoList = () => {
         const updatedTasks = tasks.filter((_, i) => i !== index);
         setTasks(updatedTasks);
     };
-
-
 
     return (
         <div className="todo-container">
