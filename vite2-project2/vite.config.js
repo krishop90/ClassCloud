@@ -7,9 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
-        changeOrigin: true
-      }
-    }
-  }
+        target: 'https://classcloud.onrender.com', // Replace with your Render backend URL
+        changeOrigin: true,
+      },
+    },
+  },
 })
