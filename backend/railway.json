@@ -1,0 +1,12 @@
+{
+    "build": {
+        "builder": "NIXPACKS",
+        "buildCommand": "npm install"
+    },
+    "start": {
+        "cmd": "node server.js",
+        "env": {
+            "PORT": "3000"
+        }
+    }
+}
