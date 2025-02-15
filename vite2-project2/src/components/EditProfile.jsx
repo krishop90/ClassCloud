@@ -70,15 +70,46 @@ const EditProfile = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Updated User Data:", userData); // Debugging step
-    // Handle the form submission (e.g., update user data on backend)
+
+    if (userData.password !== userData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("Authentication error. Please log in again.");
+        return;
+      }
+
+      const response = await fetch("http://localhost:5001/api/profile/update-password", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password: userData.password,
+          confirmPassword: userData.confirmPassword,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Password updated successfully!");
+        setUserData({ ...userData, password: "", confirmPassword: "" });
+      } else {
+        alert(data.message || "Error updating password");
+      }
+    } catch (error) {
+      console.error("Error updating password:", error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
-  if (loading) {
-    return <div>Loading...</div>; // Show loading message while data is being fetched
-  }
 
   return (
     <div className="edit-profile-page">

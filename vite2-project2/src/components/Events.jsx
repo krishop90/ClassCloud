@@ -48,7 +48,6 @@ const Events = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log("Fetched profile:", response.data);
         setUser(response.data);
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -61,8 +60,6 @@ const Events = () => {
   const handleDownload = async (eventId, eventCreator) => {
     const userId = user?._id;
     const creatorId = typeof eventCreator === "object" && eventCreator._id ? eventCreator._id : eventCreator;
-    console.log("User ID:", userId);
-    console.log("Event Creator ID:", creatorId);
 
     if (String(userId) !== String(creatorId)) {
       alert("Only the event creator can download the registration sheet.");

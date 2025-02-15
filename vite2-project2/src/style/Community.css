@@ -47,7 +47,7 @@ body {
 
 .community-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 20px;
 }
 
@@ -58,7 +58,7 @@ body {
   padding: 20px;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 70%;
+  width: 150px;
   height: 85%;
 }
 
@@ -137,6 +137,7 @@ body {
   cursor: pointer;
   margin-right: 0px;
   margin-top: -10px;
+  text-decoration: none;
 }
 
 .chat-btn:hover {

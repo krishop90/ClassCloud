@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { CalendarDays, SquareActivity, ListTodo, Users } from "lucide-react";
+import React, { useEffect, useState , useRef } from "react";
+import { CalendarDays, SquareActivity, ListTodo } from "lucide-react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../style/Dashboard.css";
 
 const Dashboard = () => {
@@ -11,6 +11,17 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [communities, setCommunities] = useState([]);
+  const [joinedCommunities, setJoinedCommunities] = useState([]);
+  const navigate = useNavigate();
+  const videoRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    videoRef.current.play();
+  };
+
+  const handleMouseLeave = () => {
+    videoRef.current.pause();
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -18,26 +29,15 @@ const Dashboard = () => {
         const token = localStorage.getItem("authToken");
         if (!token) return;
 
-        console.log("Fetching upcoming events...");
-        console.log("Current date:", new Date().toISOString());
-
+        // Fetch upcoming events
         const eventsResponse = await axios.get("/api/events/upcoming", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        console.log("Raw events response:", eventsResponse);
-        console.log("Events data:", eventsResponse.data);
-
-        if (Array.isArray(eventsResponse.data)) {
-          setUpcomingEvents(eventsResponse.data);
-        } else {
-          console.error("Events data is not an array:", eventsResponse.data);
-          setUpcomingEvents([]);
-        }
+        setUpcomingEvents(Array.isArray(eventsResponse.data) ? eventsResponse.data : []);
 
         // Fetch recent activity
         const activityResponse = await axios.get("/api/activity/recent", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         setRecentActivity(activityResponse.data);
 
@@ -47,24 +47,25 @@ const Dashboard = () => {
           setTasks(JSON.parse(savedTasks));
         }
 
-        // Fetch communities
+        // Fetch all communities
         const communitiesResponse = await axios.get("/api/community", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
+        setCommunities(Array.isArray(communitiesResponse.data) ? communitiesResponse.data : []);
 
-        if (Array.isArray(communitiesResponse.data)) {
-          setCommunities(communitiesResponse.data);
-        } else {
-          console.error("Communities data is not an array:", communitiesResponse.data);
-          setCommunities([]);
-        }
+        // Derive joined communities from the members array in each community
+        const userId = localStorage.getItem("userId"); // Assuming you store the user ID in localStorage
+        const userJoinedCommunities = communitiesResponse.data.filter((community) =>
+          community.members.includes(userId)
+        );
+        setJoinedCommunities(userJoinedCommunities);
 
         setLoading(false);
+
+
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
-        console.error("Error details:", error.response?.data || error.message);
         setError("Failed to load dashboard data");
-      } finally {
         setLoading(false);
       }
     };
@@ -73,22 +74,27 @@ const Dashboard = () => {
   }, []);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   const formatTime = (timeString) => {
-    return new Date(`1970-01-01T${timeString}`).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(`1970-01-01T${timeString}`).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   if (loading) return <div className="loading">Loading dashboard...</div>;
   if (error) return <div className="error">{error}</div>;
+
+  // Filter out communities that the user has already joined
+  const unjoinedCommunities = communities.filter(
+    (community) => !joinedCommunities.some((joined) => joined._id === community._id)
+  );
 
   return (
     <div className="dashboard">
@@ -101,18 +107,20 @@ const Dashboard = () => {
           </div>
           <div className="event-list">
             {upcomingEvents.length > 0 ? (
-              upcomingEvents
-                .slice(0, 3) // Take only first 3 events
-                .map((event) => (
-                  <div key={event._id} className="event-item">
-                    <div className="event-details">
-                      <strong>{event.title}</strong>
-                      <div>{formatDate(event.date)} at {formatTime(event.time)}</div>
-                      <div>{event.venue}</div>
+              upcomingEvents.slice(0, 3).map((event) => (
+                <div key={event._id} className="event-item">
+                  <div className="event-details">
+                    <strong>{event.title}</strong>
+                    <div>
+                      {formatDate(event.date)} at {formatTime(event.time)}
                     </div>
-                    <Link to={`/events`} className="more-details">More details</Link>
+                    <div>{event.venue}</div>
                   </div>
-                ))
+                  <Link to={`/events`} className="more-details">
+                    More details
+                  </Link>
+                </div>
+              ))
             ) : (
               <p>No upcoming events</p>
             )}
@@ -139,9 +147,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-            {recentActivity.length === 0 && (
-              <p>No recent activity</p>
-            )}
+            {recentActivity.length === 0 && <p>No recent activity</p>}
           </div>
         </div>
 
@@ -159,7 +165,9 @@ const Dashboard = () => {
                     <strong>{task.name}</strong>
                     <div>Priority: {task.priority}</div>
                   </div>
-                  <Link to="/todo" className="more-details">More details</Link>
+                  <Link to="/todo" className="more-details">
+                    More details
+                  </Link>
                 </div>
               ))
             ) : (
@@ -168,6 +176,8 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      
     </div>
   );
 };
