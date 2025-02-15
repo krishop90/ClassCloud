@@ -1,14 +1,11 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
       '/api': {
-        target: 'https://classcloud.onrender.com', // Replace with your Render backend URL
+        target: 'https://classcloud.onrender.com', // Backend URL
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '') // Remove the `/api` prefix from the path
       },
     },
   },

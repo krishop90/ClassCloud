@@ -54,7 +54,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173", // Frontend URL
+    origin: "https://classcloud.onrender.com", // Frontend URL
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
     credentials: true,
@@ -130,7 +130,7 @@ app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails
 app.use('/api/activity', activityRoutes);
 
 // Frontend
-app.use(express.static(path.join(__dirname, "frontend", "public")));
+app.use(express.static(path.join(__dirname, "vite2-project2", "dist")));
 app.use("thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 
 // Serve thumbnails correctly
