@@ -37,7 +37,7 @@ uploadDirs.forEach(dir => {
 });
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -54,7 +54,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "https://classcloud.onrender.com", // Frontend URL
+    origin: "http://localhost:5173", // Frontend URL
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
     credentials: true,
@@ -130,7 +130,7 @@ app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails
 app.use('/api/activity', activityRoutes);
 
 // Frontend
-app.use(express.static(path.join(__dirname, "vite2-project2", "dist")));
+app.use(express.static(path.join(__dirname, "vite2-project2", "public")));
 app.use("thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 
 // Serve thumbnails correctly

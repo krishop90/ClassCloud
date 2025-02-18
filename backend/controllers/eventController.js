@@ -139,7 +139,6 @@ const getUpcomingEvents = async (req, res) => {
     fifteenDaysFromNow.setDate(fifteenDaysFromNow.getDate() + 15);
     fifteenDaysFromNow.setHours(23, 59, 59, 999);
 
-    console.log("Fetching events between:", today, "and", fifteenDaysFromNow);
 
     const events = await Event.find({
       date: {
@@ -150,7 +149,6 @@ const getUpcomingEvents = async (req, res) => {
     .sort({ date: 1 })
     .populate('createdBy', 'username');
 
-    console.log("Found upcoming events:", events);
     res.json(events);
   } catch (error) {
     console.error("Error in getUpcomingEvents:", error);
