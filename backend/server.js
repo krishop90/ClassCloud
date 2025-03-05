@@ -102,10 +102,21 @@ io.on("connection", (socket) => {
     socket.join(communityId);
   });
 
-  socket.on("sendMessage", (communityId, message) => {
-    console.log(`Sending message to ${communityId} room: ${message}`);
-    io.to(communityId).emit("receiveMessage", message);
-  });
+  socket.on("sendMessage", (data) => {
+  const { communityId, message, senderId, senderName } = data;
+  console.log(`Sending message to ${communityId} room from ${senderName}: ${message}`);
+
+  const messageData = {
+    communityId,
+    text: message,
+    senderId,
+    senderName,
+    timestamp: new Date(),
+  };
+
+  io.to(communityId).emit("receiveMessage", messageData);
+});
+
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");
