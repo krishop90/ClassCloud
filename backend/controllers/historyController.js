@@ -1,6 +1,5 @@
 const History = require("../models/historyModel");
 
-// Add a video to history
 const addToHistory = async (req, res) => {
   try {
     const { userId, videoId, watchDuration, completed } = req.body;
@@ -18,7 +17,6 @@ const addToHistory = async (req, res) => {
   }
 };
 
-// Get user's watch history
 const getUserHistory = async (req, res) => {
   try {
     const userId = req.params.userId;

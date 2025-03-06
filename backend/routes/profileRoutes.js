@@ -8,7 +8,6 @@ const { updatePassword } = require("../controllers/userController");
 
 const router = express.Router();
 
-// Update Profile Route
 router.put(
   "/me",
   protect,
@@ -43,7 +42,6 @@ router.put(
   }
 );
 
-// Get Profile Route
 router.get("/me", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -58,7 +56,6 @@ router.get("/me", protect, async (req, res) => {
 
 router.get("/" , protect, getProfile);
 
-// Add the delete route
 router.delete("/delete-profile", protect, deleteAccount);
 
 router.put("/update-password", protect, updatePassword);

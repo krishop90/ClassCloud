@@ -26,7 +26,7 @@ const AddEventModal = ({ onClose, onAddEvent }) => {
             time: time,
             capacity: parseInt(capacity),
             date: formattedDate.toISOString(),
-            description: `Event scheduled for ${date} at ${time}` // Add default description
+            description: `Event scheduled for ${date} at ${time}` 
         };
 
         onAddEvent(newEvent);

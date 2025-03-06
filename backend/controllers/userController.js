@@ -51,7 +51,6 @@ const bcrypt = require("bcrypt");
     try {
         const { email, password } = req.body;
 
-        // Validate input
         if (!email || !password) {
             return res.status(400).json({ 
                 success: false,
@@ -59,7 +58,6 @@ const bcrypt = require("bcrypt");
             });
         }
 
-        // Find user and handle case-sensitivity
         const user = await User.findOne({ email: email.toLowerCase() });
         if (!user) {
             return res.status(401).json({ 
@@ -77,7 +75,7 @@ const bcrypt = require("bcrypt");
             });
         }
 
-        // Generate JWT token
+        //JWT token
         const token = jwt.sign(
             { 
                 id: user._id,
@@ -118,25 +116,20 @@ const bcrypt = require("bcrypt");
   };
 
   // Delete Account Controller
-  // Delete Account Controller
   const deleteAccount = async (req, res) => {
     try {
-      const userId = req.user.id; // Get user ID from the authenticated token
+      const userId = req.user.id;
 
-      // Ensure userId exists
       if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
       }
 
-      // Find the user and delete by their ID
       const user = await User.findByIdAndDelete(userId);
 
-      // If user not found, return an error
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      // Respond with a success message
       return res.status(200).json({ message: "Account deleted successfully" });
     } catch (error) {
       console.error("Error in deleteAccount controller:", error);
@@ -168,7 +161,6 @@ const bcrypt = require("bcrypt");
 
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
       
-      // Create reset URL using frontend URL
       const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
       const transporter = nodemailer.createTransport({
@@ -218,10 +210,8 @@ const bcrypt = require("bcrypt");
       const { token } = req.params;
       const { newPassword } = req.body;
 
-      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Find user
       const user = await User.findById(decoded.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -231,7 +221,6 @@ const bcrypt = require("bcrypt");
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-      // Update password
       user.password = hashedPassword;
       await user.save();
 
@@ -244,8 +233,7 @@ const bcrypt = require("bcrypt");
       res.status(500).json({ message: "Error resetting password" });
     }
   };
-
-  // Send Friend Request Controller
+  
   const sendFriendRequest = async (req, res) => {
     const { recipientId } = req.body;
     try {
@@ -326,7 +314,7 @@ const bcrypt = require("bcrypt");
     }
   };
 
-  // Get Recent Activity
+  // recent activity
   const getRecentActivity = async (req, res) => {
     try {
       const userId = req.user.id;
@@ -350,10 +338,10 @@ const bcrypt = require("bcrypt");
     }
   };
 
-  // Get Friends List
+  // friend list
   const getFriendsList = async (req, res) => {
     try {
-      const userId = req.user.id; // ID of the logged-in user
+      const userId = req.user.id;
 
       const user = await User.findById(userId).populate("friends", "name username avatar");
       if (!user) {
@@ -372,7 +360,6 @@ const bcrypt = require("bcrypt");
     const userId = req.user.id;
     const { password, confirmPassword } = req.body;
 
-    // Validate input
     if (!password || !confirmPassword) {
       return res.status(400).json({ message: "Both fields are required" });
     }
@@ -385,10 +372,8 @@ const bcrypt = require("bcrypt");
       return res.status(400).json({ message: "Password must be at least 6 characters long" });
     }
 
-    // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Update the user's password in the database
     const updatedUser = await User.findByIdAndUpdate(
       userId, 
       { password: hashedPassword },

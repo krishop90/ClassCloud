@@ -20,17 +20,15 @@ const createEvent = async (req, res) => {
       date,
       time,
       capacity,
-      createdBy: req.user._id  // Updated to use _id instead of id
+      createdBy: req.user._id  
     });
 
     await newEvent.save();
 
-    // Get all users except the creator
     const users = await User.find({ 
       _id: { $ne: req.user._id } 
     }).select('email name');
 
-    // Create email transporter
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -39,11 +37,9 @@ const createEvent = async (req, res) => {
       }
     });
 
-    // Format date and time for email
     const eventDate = new Date(date).toLocaleDateString();
     const eventLink = `${process.env.CLIENT_URL}/events/${newEvent._id}`;
 
-    // Send emails to all users
     for (const user of users) {
       const mailOptions = {
         from: process.env.EMAIL_USER,
@@ -227,17 +223,16 @@ const searchEvents = async (req, res) => {
   try {
     const { title, venue, date, creator } = req.query;
 
-    // Build a dynamic query object
     const query = {};
 
     if (title) {
-      query.title = { $regex: title, $options: "i" }; // Case-insensitive regex
+      query.title = { $regex: title, $options: "i" }; 
     }
     if (venue) {
       query.venue = { $regex: venue, $options: "i" };
     }
     if (date) {
-      query.date = new Date(date); // Exact date match
+      query.date = new Date(date); 
     }
     if (creator) {
       query.createdBy = creator;

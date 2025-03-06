@@ -14,24 +14,24 @@ const { protect } = require("../middleware/authMiddleware");
 const authenticate = require('../middleware/authMiddleware');
 
 
-// Route to create an event (only accessible to authenticated users)
+// create an event
 router.post("/create", protect, createEvent);
 
-// Route to get all events
+// get all events
 router.get("/", getAllEvents);
 
-// Route to register for an event
+// register for an event
 router.post('/register/:eventId', protect, registerForEvent);
 
 
-// Route to download event registrations
+// download event registrations
 router.get('/download/:id', protect, downloadRegistrations);
 
-// Route to delete an event
+// delete an event
 router.delete("/:id", protect, deleteEvent);
 
 
-// Route to get upcoming events
+// get upcoming events
 router.get("/upcoming", protect, getUpcomingEvents);
 
 // Search for events

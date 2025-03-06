@@ -1,8 +1,7 @@
 const Note = require("../models/noteModel");
 const path = require('path');
-const fs = require('fs');  // Change this from fs.promises
+const fs = require('fs');  
 
-// Upload a note
 const uploadNote = async (req, res) => {
   try {
 
@@ -21,7 +20,7 @@ const uploadNote = async (req, res) => {
     await newNote.save();
     res.status(201).json({ message: "Note uploaded successfully" });
   } catch (error) {
-    console.error("Error in uploadNote:", error); // Detailed error logging
+    console.error("Error in uploadNote:", error); 
     res.status(500).json({ 
       message: "Error uploading note",
       error: error.message 
@@ -38,13 +37,11 @@ const downloadNote = async (req, res) => {
 
     const filePath = path.join(__dirname, '..', note.filePath);
     
-    // Use synchronous existsSync
     if (!fs.existsSync(filePath)) {
       console.error('File not found:', filePath);
       return res.status(404).json({ message: "File not found on server" });
     }
 
-    // Get file extension and set content type
     const ext = path.extname(filePath).toLowerCase();
     const mimeTypes = {
       '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
@@ -54,14 +51,12 @@ const downloadNote = async (req, res) => {
       '.doc': 'application/msword',
       '.txt': 'text/plain'
     };
-
-    // Set appropriate headers
+    
     res.set({
       'Content-Type': mimeTypes[ext] || 'application/octet-stream',
       'Content-Disposition': `attachment; filename="${path.basename(filePath)}"`,
     });
 
-    // Send file
     res.sendFile(filePath, (err) => {
       if (err) {
         console.error('Send file error:', err);
@@ -94,18 +89,18 @@ const getAllNotes = async (req, res) => {
 
 const searchNotes = async (req, res) => {
   try {
-    const { query } = req.query; // Extract search query from request
+    const { query } = req.query; 
     if (!query) {
       return res.status(400).json({ message: "Search query is required" });
     }
 
     const notes = await Note.find({
       $or: [
-        { title: { $regex: query, $options: "i" } }, // Case-insensitive search in title
-        { uploadedBy: { $regex: query, $options: "i" } } // Case-insensitive search in uploadedBy
+        { title: { $regex: query, $options: "i" } }, 
+        { uploadedBy: { $regex: query, $options: "i" } } 
       ]
     })
-      .populate("uploadedBy", "username email") // Populate user details
+      .populate("uploadedBy", "username email") 
       .sort({ uploadDate: -1 });
 
     if (notes.length === 0) {

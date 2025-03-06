@@ -44,7 +44,7 @@ const uploadVideo = multer({
     fileSize: 3 * 1024 * 1024 * 1024, // 3 GB
   },
   fileFilter: (req, file, cb) => {
-    const fileTypes = /mp4|mov|avi/; // Allow video files only
+    const fileTypes = /mp4|mov|avi/;
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
     const mimeType = fileTypes.test(file.mimetype);
 
@@ -61,7 +61,6 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/notes');
   },
   filename: (req, file, cb) => {
-    // Preserve the original file extension
     const ext = path.extname(file.originalname);
     const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
     cb(null, filename);

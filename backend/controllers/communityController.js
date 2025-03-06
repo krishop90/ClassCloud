@@ -86,7 +86,7 @@ const updateCommunity = async (req, res) => {
 
 const inviteToCommunity = async (req, res) => {
   const { communityId } = req.params;
-  const { friendIds } = req.body; // Extract friendIds from request body
+  const { friendIds } = req.body; 
 
   if (!friendIds || !Array.isArray(friendIds)) {
     return res.status(400).json({ message: "friendIds should be an array" });
@@ -247,7 +247,7 @@ const getCommunityMembers = async (req, res) => {
 // Get all communities
 const getAllCommunities = async (req, res) => {
   try {
-    const communities = await Community.find().populate("creator", "name"); // Optionally, populate creator's name
+    const communities = await Community.find().populate("creator", "name");
     res.status(200).json(communities);
   } catch (error) {
     res.status(500).json({ message: "Error fetching communities", error: error.message });
@@ -256,7 +256,7 @@ const getAllCommunities = async (req, res) => {
 
 const searchCommunities = async (req, res) => {
   try {
-    const { q } = req.query; // Get the search query from the request
+    const { q } = req.query; 
 
     if (!q) {
       return res.status(400).json({ message: "Search query is required" });
@@ -274,8 +274,6 @@ const searchCommunities = async (req, res) => {
     res.status(500).json({ message: "Error searching communities", error: error.message });
   }
 };
-
-// Add these new functions
 
 const getMessages = async (req, res) => {
   try {
@@ -329,7 +327,7 @@ const sendMessage = async (req, res) => {
 const joinCommunity = async (req, res) => {
   try {
     const { communityId } = req.params;
-    const userId = req.user._id; // From auth middleware
+    const userId = req.user._id; 
 
     const community = await Community.findById(communityId);
     
@@ -337,7 +335,6 @@ const joinCommunity = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    // Check if already a member
     if (community.members.includes(userId)) {
       return res.status(400).json({ message: "Already a member" });
     }

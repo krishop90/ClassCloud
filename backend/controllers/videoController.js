@@ -14,14 +14,14 @@ const uploadVideoHandler = async (req, res) => {
       return res.status(401).json({ message: "User not authenticated." });
     }
     const { title, description } = req.body;
-    // Check for restricted words in title and description
+
     const containsRestrictedWord = restrictedWords.some((word) =>
       new RegExp(`\\b${word}\\b`, "i").test(title + " " + description)
     );
     if (containsRestrictedWord) {
       return res.status(400).json({ message: "Title or description contains restricted words." });
     }
-    // Check video duration (max: 40 minutes -> 2400 seconds)
+
     const videoDuration = await new Promise((resolve, reject) => {
       ffmpeg.ffprobe(req.file.path, (err, metadata) => {
         if (err) return reject(err);
@@ -31,10 +31,10 @@ const uploadVideoHandler = async (req, res) => {
     if (videoDuration > 2400) {
       return res.status(400).json({ message: "Video duration exceeds the 40-minute limit." });
     }
-    // Generate thumbnail
+
     const thumbnailDir = path.join(__dirname, "..", "uploads", "thumbnails");
     const thumbnailPath = await generateThumbnail(req.file.path, thumbnailDir);
-    // Save video data
+
     const newVideo = await Video.create({
       title,
       description,
@@ -51,7 +51,7 @@ const uploadVideoHandler = async (req, res) => {
 
 const getAllVideos = async (req, res) => {
   try {
-    const { query } = req.query; // Get search query from request parameters
+    const { query } = req.query; 
     const filter = {};
     if (query) {
       filter.title = { $regex: query, $options: "i" };

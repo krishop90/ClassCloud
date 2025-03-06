@@ -1,6 +1,5 @@
 const Work = require("../models/workModel");
 
-// Create a new work/task
 const createWork = async (req, res) => {
   try {
     const { task } = req.body;
@@ -22,7 +21,6 @@ const createWork = async (req, res) => {
   }
 };
 
-// Get all work/tasks
 const getAllWork = async (req, res) => {
   try {
     const workList = await Work.find({ createdBy: req.user.id }).sort({ createdAt: -1 });
@@ -33,7 +31,7 @@ const getAllWork = async (req, res) => {
   }
 };
 
-// Get summary of tasks
+
 const getWorkSummary = async (req, res) => {
   try {
     const totalTasks = await Work.countDocuments({ createdBy: req.user.id });
@@ -51,7 +49,6 @@ const getWorkSummary = async (req, res) => {
   }
 };
 
-// Update work (mark as completed and delete)
 const updateWork = async (req, res) => {
   try {
     const { id } = req.params;

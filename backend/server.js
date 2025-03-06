@@ -21,14 +21,14 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 
-// Ensure uploads directory exists
+
 const uploadDir = path.join(__dirname, 'uploads/notes');
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const uploadDirs = ['uploads/notes', 'uploads/videos', 'uploads/avatars'];
-// Create upload directories if they don't exist
+
 uploadDirs.forEach(dir => {
   const dirPath = path.join(__dirname, dir);
   if (!fs.existsSync(dirPath)) {
@@ -50,7 +50,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   }
 }));
 
-// Socket.io setup
+// Socket.io 
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -64,7 +64,6 @@ const io = socketIo(server, {
 io.on("connection", (socket) => {
   console.log("New client connected");
 
-  // Real-time chatbot integration
   socket.on("askChatbot", async (message) => {
     try {
       const faq = await FAQ.findOne({ question: message });
@@ -96,7 +95,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Community chat features
   socket.on("joinCommunity", (communityId, username) => {
     console.log(`${username} joined the ${communityId} room`);
     socket.join(communityId);
@@ -123,7 +121,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Route Middleware
 app.use("/api/community", communityRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", authRoutes);
@@ -140,21 +137,20 @@ app.use("/api/chatbot", chatbotRoutes);
 app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 app.use('/api/activity', activityRoutes);
 
-// Frontend
+
 app.use(express.static(path.join(__dirname, "vite2-project2", "public")));
 app.use("thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 
-// Serve thumbnails correctly
+
 app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 
-// MongoDB Connection
+// MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Root Route
+
 app.get("/", (req, res) => res.send("Educonnect server is running!"));
 
-// Start Server
 server.listen(port, () => console.log(`Server running on port ${port}`));

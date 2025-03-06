@@ -19,28 +19,28 @@ const getRecentActivity = async (req, res) => {
       return `${days} days ago`;
     };
 
-    // Get registered events with timestamps
+    // registered events
     const registeredEvents = await Event.find({ "registrations.user": userId })
       .sort({ "registrations.registeredAt": -1 })
       .limit(5)
       .select('title registrations')
       .lean();
 
-    // Get recent notes
+    // recent notes
     const recentNotes = await Note.find({ userId })
       .sort({ createdAt: -1 })
       .limit(5)
       .select('title createdAt')
       .lean();
 
-    // Get recently joined communities
+    // recently joined communities
     const recentCommunities = await Community.find({ "members": userId })
       .sort({ "members.joinedAt": -1 })
       .limit(5)
       .select('name createdAt')
       .lean();
 
-    // Format the activities with relative time
+
     const activities = [
       ...registeredEvents.map(event => ({
         type: 'event',
