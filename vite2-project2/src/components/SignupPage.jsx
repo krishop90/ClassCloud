@@ -55,7 +55,7 @@ const SignupPage = () => {
       </form>
       <p>
         Already have an account?
-        <Link to="/login">Login</Link>
+        <Link to="/login"> Login</Link>
       </p>
     </div>
   );

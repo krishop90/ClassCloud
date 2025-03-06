@@ -13,6 +13,8 @@ import Chatbot from "./components/Chatbot";
 import Chat from "./components/Chat";
 import SignupPage from "./components/SignupPage";
 import LoginPage from "./components/LoginPage";
+import ResetPassword from "./components/ResetPassword";
+import ForgotPassword from "./components/ForgotPassword";
 import "./App.css";
 
 const App = () => {
@@ -66,7 +68,9 @@ const App = () => {
             element={token ? <Chat /> : <Navigate to="/login" />}
           />
 
-          <Route path="/forgot-password" element={<div>Forgot Password</div>} />
+
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </div>
     </div>

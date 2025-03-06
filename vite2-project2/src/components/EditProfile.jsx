@@ -40,27 +40,24 @@ const EditProfile = () => {
 
         const data = await response.json();
 
-        console.log("Fetched User Data:", data); // Debugging step
 
-        // Set user data from response
         setUserData({
-          name: data.name, // Corrected field name
+          name: data.name, 
           username: data.username,
           email: data.email,
-          password: "", // You can leave password empty or not display it for security reasons
+          password: "", 
           confirmPassword: ""
         });
       } catch (error) {
-        console.error("Error fetching user data:", error); // Debugging step
+        console.error("Error fetching user data:", error);
       } finally {
-        setLoading(false); // Stop loading once data is fetched
+        setLoading(false); 
       }
     };
 
     fetchUserData();
   }, []);
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUserData((prevState) => ({
@@ -69,7 +66,6 @@ const EditProfile = () => {
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -121,9 +117,9 @@ const EditProfile = () => {
               className="input2"
               placeholder="Full Name"
               name="name"
-              value={userData.name} // Display name
+              value={userData.name} 
               onChange={handleChange}
-              disabled // Make the field non-editable
+              disabled 
             />
             <input
               type="text"
@@ -132,7 +128,7 @@ const EditProfile = () => {
               name="username"
               value={userData.username}
               onChange={handleChange}
-              disabled // Make the field non-editable
+              disabled 
             />
           </div>
           <div className="form-row">

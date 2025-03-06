@@ -1,4 +1,4 @@
-  const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
   const jwt = require("jsonwebtoken");
   const {validationResult} = require("express-validator");
   const nodemailer = require("nodemailer");
@@ -48,21 +48,64 @@
 
   // Login Controller
   const login = async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Email and password are required" 
+            });
+        }
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
+        // Find user and handle case-sensitivity
+        const user = await User.findOne({ email: email.toLowerCase() });
+        if (!user) {
+            return res.status(401).json({ 
+                success: false,
+                message: "Invalid credentials" 
+            });
+        }
+
+        // Check password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ 
+                success: false,
+                message: "Invalid credentials" 
+            });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { 
+                id: user._id,
+                email: user.email,
+                name: user.name 
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '30d' }
+        );
+
+        res.status(200).json({
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email
+            }
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: "An error occurred during login" 
+        });
     }
-  };
+};
 
   // Logout Controller
   const logout = async (req, res) => {
@@ -124,7 +167,9 @@
       }
 
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
-      const resetUrl = `${process.env.CLIENT_URL}/reset-password/${encodeURIComponent(token)}`;
+      
+      // Create reset URL using frontend URL
+      const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -132,43 +177,71 @@
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS,
         },
+        tls: {
+          rejectUnauthorized: false
+        }
       });
 
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "Password Reset Request",
-        text: `You requested a password reset. Please click the link below to reset your password:\n\n${resetUrl}`,
+        subject: "Password Reset Request - Educonnect",
+        html: `
+          <h2>Password Reset Request</h2>
+          <p>You requested a password reset for your Educonnect account.</p>
+          <p>Click the button below to reset your password:</p>
+          <a href="${resetUrl}" style="
+            background-color: #4A63D3;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 20px 0;
+          ">Reset Password</a>
+          <p>This link will expire in 15 minutes.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        `
       };
 
       await transporter.sendMail(mailOptions);
-
       res.status(200).json({ message: "Password reset link sent to email" });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error", error: err.message });
+      console.error("Error in forgotPassword:", err);
+      res.status(500).json({ message: "Error sending reset email", error: err.message });
     }
   };
 
   // Reset Password Controller
   const resetPassword = async (req, res) => {
-    const { token } = req.params;
-    const { newPassword } = req.body;
     try {
+      const { token } = req.params;
+      const { newPassword } = req.body;
+
+      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      // Find user
       const user = await User.findById(decoded.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      // Hash new password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      // Update password
       user.password = hashedPassword;
       await user.save();
 
-      res.status(200).json({ message: "Password updated successfully" });
+      res.json({ message: "Password reset successful" });
     } catch (error) {
-      console.error(error);
-      res.status(400).json({ message: "Invalid or expired token" });
+      console.error("Reset password error:", error);
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: "Reset link has expired" });
+      }
+      res.status(500).json({ message: "Error resetting password" });
     }
   };
 
