@@ -2,6 +2,8 @@ const Event = require("../models/eventModel");
 const { parse } = require('json2csv');
 const {fs} = require('fs');
 const User = require("../models/userModel");
+const nodemailer = require('nodemailer');
+
 // Create a new event
 const createEvent = async (req, res) => {
   const { title, description, venue, date, time, capacity } = req.body;
@@ -22,10 +24,75 @@ const createEvent = async (req, res) => {
     });
 
     await newEvent.save();
-    res.status(201).json(newEvent);
+
+    // Get all users except the creator
+    const users = await User.find({ 
+      _id: { $ne: req.user._id } 
+    }).select('email name');
+
+    // Create email transporter
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    // Format date and time for email
+    const eventDate = new Date(date).toLocaleDateString();
+    const eventLink = `${process.env.CLIENT_URL}/events/${newEvent._id}`;
+
+    // Send emails to all users
+    for (const user of users) {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: `New Event: ${title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #4A63D3;">New Event Alert: ${title}!</h2>
+            <p>Hello ${user.name},</p>
+            <p>A new event has been created that you might be interested in:</p>
+            
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="margin-top: 0;">${title}</h3>
+              <p>${description}</p>
+              <p><strong>Venue:</strong> ${venue}</p>
+              <p><strong>Date:</strong> ${eventDate}</p>
+              <p><strong>Time:</strong> ${time}</p>
+            </div>
+
+            <a href="${eventLink}" style="
+              background-color: #4A63D3;
+              color: white;
+              padding: 12px 24px;
+              text-decoration: none;
+              border-radius: 5px;
+              display: inline-block;
+              margin: 20px 0;
+            ">Register Now</a>
+
+            <p style="color: #666; font-size: 0.9em;">
+              If you're not logged in, you'll be directed to the login page first.
+            </p>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+    }
+
+    res.status(201).json({ 
+      message: 'Event created and notifications sent successfully',
+      event: newEvent 
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error creating event', error: error.message });
+    res.status(500).json({ 
+      message: 'Error creating event or sending notifications', 
+      error: error.message 
+    });
   }
 };
 

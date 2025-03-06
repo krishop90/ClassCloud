@@ -32,6 +32,18 @@ const AddEventModal = ({ onClose, onAddEvent }) => {
         onAddEvent(newEvent);
     };
 
+    // Add this to your event registration component
+    const handleRegisterClick = () => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            // Save the event URL to redirect back after login
+            localStorage.setItem('redirectAfterLogin', `/events/${eventId}`);
+            navigate('/login');
+        } else {
+            navigate(`/events/${eventId}`);
+        }
+    };
+
     return (
         <div className="full-page-modal">
             <div className="modal-form-container2">

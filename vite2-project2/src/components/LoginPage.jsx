@@ -10,6 +10,17 @@ const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
+    const handleLoginSuccess = () => {
+        const redirectUrl = localStorage.getItem('redirectAfterLogin');
+        localStorage.removeItem('redirectAfterLogin'); // Clear the saved URL
+
+        if (redirectUrl) {
+            navigate(redirectUrl);
+        } else {
+            navigate('/dashboard');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isLoading) return;
@@ -39,7 +50,7 @@ const LoginPage = () => {
                 setPassword("");
 
                 // Navigate to dashboard
-                navigate('/dashboard');
+                handleLoginSuccess();
             } else {
                 throw new Error(response.data.message || 'Login failed');
             }
