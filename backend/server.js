@@ -59,10 +59,31 @@ const io = socketIo(server, {
     allowedHeaders: ["Content-Type"],
     credentials: true,
   },
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  transports: ['websocket', 'polling']
 });
 
+// Track connected sockets
+const connectedSockets = new Map();
+
 io.on("connection", (socket) => {
-  console.log("New client connected");
+  console.log(`New client connected [ID: ${socket.id}]`);
+  connectedSockets.set(socket.id, { connected: true, lastPing: Date.now() });
+
+  // Handle ping
+  socket.on('ping', () => {
+    connectedSockets.get(socket.id).lastPing = Date.now();
+    socket.emit('pong');
+  });
+
+  socket.on("error", (error) => {
+    console.error(`Socket Error [ID: ${socket.id}]:`, error);
+    socket.emit("error", "Internal server error");
+  });
 
   socket.on("askChatbot", async (message) => {
     try {
@@ -96,29 +117,62 @@ io.on("connection", (socket) => {
   });
 
   socket.on("joinCommunity", (communityId, username) => {
-    console.log(`${username} joined the ${communityId} room`);
-    socket.join(communityId);
+    try {
+      console.log(`${username} joined the ${communityId} room`);
+      socket.join(communityId);
+      socket.emit("joinedCommunity", { status: "success", communityId });
+    } catch (error) {
+      console.error(`Error joining community: ${error}`);
+      socket.emit("error", "Failed to join community");
+    }
   });
 
   socket.on("sendMessage", (data) => {
-  const { communityId, message, senderId, senderName } = data;
-  console.log(`Sending message to ${communityId} room from ${senderName}: ${message}`);
+    const { communityId, message, senderId, senderName } = data;
+    console.log(`Sending message to ${communityId} room from ${senderName}: ${message}`);
+  
+    const messageData = {
+      communityId,
+      text: message,
+      senderId,
+      senderName,
+      timestamp: new Date(),
+    };
+  
+    io.to(communityId).emit("receiveMessage", messageData);
+  });
 
-  const messageData = {
-    communityId,
-    text: message,
-    senderId,
-    senderName,
-    timestamp: new Date(),
-  };
-
-  io.to(communityId).emit("receiveMessage", messageData);
+  socket.on("disconnect", (reason) => {
+    console.log(`Client disconnected [ID: ${socket.id}] Reason: ${reason}`);
+    connectedSockets.delete(socket.id);
+    
+    // Leave all rooms
+    socket.rooms.forEach((room) => {
+      if (room !== socket.id) {
+        socket.leave(room);
+      }
+    });
+  });
 });
 
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
+// Cleanup stale connections periodically
+setInterval(() => {
+  const now = Date.now();
+  connectedSockets.forEach((data, socketId) => {
+    if (now - data.lastPing > 70000) { // 70 seconds
+      const socket = io.sockets.sockets.get(socketId);
+      if (socket) {
+        console.log(`Closing stale connection [ID: ${socketId}]`);
+        socket.disconnect(true);
+      }
+      connectedSockets.delete(socketId);
+    }
   });
+}, 30000);
+
+// Error handling for the server
+server.on('error', (error) => {
+  console.error('Server error:', error);
 });
 
 app.use("/api/community", communityRoutes);
