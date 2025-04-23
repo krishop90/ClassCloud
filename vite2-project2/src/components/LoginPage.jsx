@@ -12,18 +12,12 @@ const LoginPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const checkToken = async () => {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                const isValid = await verifyToken(token);
-                if (!isValid) {
-                    clearAuthData();
-                    setError("Session expired. Please login again.");
-                }
-            }
-        };
-        checkToken();
-    }, []);
+        const token = localStorage.getItem('authToken');
+        const user = localStorage.getItem('userData');
+        if (token && user) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -35,20 +29,26 @@ const LoginPage = () => {
 
             const response = await axiosInstance.post('/users/login', {
                 email: email.trim(),
-                password
+                password,
             });
 
             if (response.data?.success && response.data?.token) {
                 localStorage.setItem('authToken', response.data.token);
                 localStorage.setItem('userData', JSON.stringify(response.data.user));
-                navigate('/dashboard');
+
+                axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+
+                await new Promise(resolve => setTimeout(resolve, 100));
+                navigate('/dashboard', { replace: true });
             } else {
                 throw new Error(response.data?.message || 'Login failed');
             }
         } catch (error) {
             console.error("Login failed:", error);
             setError(error.response?.data?.message || "Invalid credentials");
-            clearAuthData();
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            delete axiosInstance.defaults.headers.common['Authorization'];
         } finally {
             setIsLoading(false);
         }

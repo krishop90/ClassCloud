@@ -12,6 +12,7 @@ const ProtectedRoute = ({ children }) => {
     verifyToken(token).catch(() => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
+        alert("Session expired. Please log in again."); // Added alert for better feedback
         window.location.href = '/login';
     });
 

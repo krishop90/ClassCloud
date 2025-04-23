@@ -371,9 +371,9 @@ const bcrypt = require("bcrypt");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const updatedUser = await User.findByIdAndUpdate(
-      userId, 
+      userId,
       { password: hashedPassword },
       { new: true }
     );

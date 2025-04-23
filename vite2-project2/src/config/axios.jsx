@@ -24,6 +24,7 @@ axiosInstance.interceptors.response.use(
             isRedirecting = true;
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
+            alert("Session expired. Please log in again."); // Added alert for better feedback
             window.location.href = '/login';
             return new Promise(() => { }); // Prevent error propagation
         }

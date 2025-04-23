@@ -1,49 +1,67 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { CalendarDays, SquareActivity, ListTodo } from "lucide-react";
-import axiosInstance from "../config/axios";
+import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import "../style/Dashboard.css";
 
 const Dashboard = () => {
-  const [data, setData] = useState(null);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [communities, setCommunities] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const navigate = useNavigate();
-  const videoRef = useRef(null);
-
-  const handleMouseEnter = () => {
-    videoRef.current.play();
-  };
-
-  const handleMouseLeave = () => {
-    videoRef.current.pause();
-  };
-
-  const fetchDashboardData = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      const response = await axiosInstance.get("/events/upcoming");
-      setData(response.data);
-    } catch (error) {
-      // Error handling is now managed by axios interceptor
-      if (!error.response?.status === 401) {
-        console.error("Non-auth error:", error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]);
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          setError("Authentication required. Please log in.");
+          navigate("/login");
+          return;
+        }
+
+        // Fetch upcoming events
+        const eventsResponse = await axios.get("/api/events/upcoming", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUpcomingEvents(Array.isArray(eventsResponse.data) ? eventsResponse.data : []);
+
+        // Fetch recent activity
+        const activityResponse = await axios.get("/api/activity/recent", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRecentActivity(activityResponse.data);
+
+        // Fetch tasks from localStorage
+        const savedTasks = localStorage.getItem("tasks");
+        setTasks(savedTasks ? JSON.parse(savedTasks) : []);
+
+        // Fetch all communities
+        const communitiesResponse = await axios.get("/api/community", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCommunities(Array.isArray(communitiesResponse.data) ? communitiesResponse.data : []);
+
+        // Derive joined communities
+        const userId = localStorage.getItem("userId");
+        const userJoinedCommunities = communitiesResponse.data.filter((community) =>
+          community.members.includes(userId)
+        );
+        setJoinedCommunities(userJoinedCommunities);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        setError("Failed to load dashboard data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboardData();
-  }, [fetchDashboardData]);
+  }, [navigate]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -78,8 +96,8 @@ const Dashboard = () => {
             <CalendarDays className="calendar" />
           </div>
           <div className="event-list">
-            {data?.upcomingEvents?.length > 0 ? (
-              data.upcomingEvents.slice(0, 3).map((event) => (
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.slice(0, 3).map((event) => (
                 <div key={event._id} className="event-item">
                   <div className="event-details">
                     <strong>{event.title}</strong>
@@ -96,9 +114,9 @@ const Dashboard = () => {
             ) : (
               <p>No upcoming events</p>
             )}
-            {data?.upcomingEvents?.length > 3 && (
+            {upcomingEvents.length > 3 && (
               <Link to="/events" className="view-all-link">
-                View all events ({data.upcomingEvents.length})
+                View all events ({upcomingEvents.length})
               </Link>
             )}
           </div>
@@ -111,15 +129,18 @@ const Dashboard = () => {
             <SquareActivity className="calendar" />
           </div>
           <div className="activity-list">
-            {data?.recentActivity?.map((activity, index) => (
-              <div key={index} className="activity-item">
-                <div className="activity-details">
-                  <strong>{activity.action}: {activity.title}</strong>
-                  <span className="activity-time">{activity.time}</span>
+            {recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => (
+                <div key={index} className="activity-item">
+                  <div className="activity-details">
+                    <strong>{activity.action}: {activity.title}</strong>
+                    <span className="activity-time">{activity.time}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
-            {data?.recentActivity?.length === 0 && <p>No recent activity</p>}
+              ))
+            ) : (
+              <p>No recent activity</p>
+            )}
           </div>
         </div>
 
@@ -130,8 +151,8 @@ const Dashboard = () => {
             <ListTodo className="calendar" />
           </div>
           <div className="event-list">
-            {data?.tasks?.length > 0 ? (
-              data.tasks.map((task, index) => (
+            {tasks.length > 0 ? (
+              tasks.map((task, index) => (
                 <div key={index} className="event-item">
                   <div className="event-details">
                     <strong>{task.name}</strong>
