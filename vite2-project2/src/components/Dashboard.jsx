@@ -1,13 +1,11 @@
-import React, { useEffect, useState , useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { CalendarDays, SquareActivity, ListTodo } from "lucide-react";
-import axios from "axios";
+import axiosInstance from "../config/axios";
 import { Link, useNavigate } from "react-router-dom";
 import "../style/Dashboard.css";
 
 const Dashboard = () => {
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [tasks, setTasks] = useState([]);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [communities, setCommunities] = useState([]);
@@ -23,55 +21,29 @@ const Dashboard = () => {
     videoRef.current.pause();
   };
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) return;
-
-        // Fetch upcoming events
-        const eventsResponse = await axios.get("/api/events/upcoming", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUpcomingEvents(Array.isArray(eventsResponse.data) ? eventsResponse.data : []);
-
-        // Fetch recent activity
-        const activityResponse = await axios.get("/api/activity/recent", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setRecentActivity(activityResponse.data);
-
-        // Fetch tasks from localStorage for now
-        const savedTasks = localStorage.getItem("tasks");
-        if (savedTasks) {
-          setTasks(JSON.parse(savedTasks));
-        }
-
-        // Fetch all communities
-        const communitiesResponse = await axios.get("/api/community", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setCommunities(Array.isArray(communitiesResponse.data) ? communitiesResponse.data : []);
-
-        // Derive joined communities from the members array in each community
-        const userId = localStorage.getItem("userId"); // Assuming you store the user ID in localStorage
-        const userJoinedCommunities = communitiesResponse.data.filter((community) =>
-          community.members.includes(userId)
-        );
-        setJoinedCommunities(userJoinedCommunities);
-
-        setLoading(false);
-
-
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        setError("Failed to load dashboard data");
-        setLoading(false);
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
       }
-    };
 
+      const response = await axiosInstance.get("/events/upcoming");
+      setData(response.data);
+    } catch (error) {
+      // Error handling is now managed by axios interceptor
+      if (!error.response?.status === 401) {
+        console.error("Non-auth error:", error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -106,8 +78,8 @@ const Dashboard = () => {
             <CalendarDays className="calendar" />
           </div>
           <div className="event-list">
-            {upcomingEvents.length > 0 ? (
-              upcomingEvents.slice(0, 3).map((event) => (
+            {data?.upcomingEvents?.length > 0 ? (
+              data.upcomingEvents.slice(0, 3).map((event) => (
                 <div key={event._id} className="event-item">
                   <div className="event-details">
                     <strong>{event.title}</strong>
@@ -124,9 +96,9 @@ const Dashboard = () => {
             ) : (
               <p>No upcoming events</p>
             )}
-            {upcomingEvents.length > 3 && (
+            {data?.upcomingEvents?.length > 3 && (
               <Link to="/events" className="view-all-link">
-                View all events ({upcomingEvents.length})
+                View all events ({data.upcomingEvents.length})
               </Link>
             )}
           </div>
@@ -139,7 +111,7 @@ const Dashboard = () => {
             <SquareActivity className="calendar" />
           </div>
           <div className="activity-list">
-            {recentActivity.map((activity, index) => (
+            {data?.recentActivity?.map((activity, index) => (
               <div key={index} className="activity-item">
                 <div className="activity-details">
                   <strong>{activity.action}: {activity.title}</strong>
@@ -147,7 +119,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-            {recentActivity.length === 0 && <p>No recent activity</p>}
+            {data?.recentActivity?.length === 0 && <p>No recent activity</p>}
           </div>
         </div>
 
@@ -158,8 +130,8 @@ const Dashboard = () => {
             <ListTodo className="calendar" />
           </div>
           <div className="event-list">
-            {tasks.length > 0 ? (
-              tasks.map((task, index) => (
+            {data?.tasks?.length > 0 ? (
+              data.tasks.map((task, index) => (
                 <div key={index} className="event-item">
                   <div className="event-details">
                     <strong>{task.name}</strong>
@@ -176,8 +148,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
-      
     </div>
   );
 };

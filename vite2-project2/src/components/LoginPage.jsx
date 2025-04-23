@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axios';
+import { verifyToken, clearAuthData } from '../utils/auth';
 import "../style/LoginSign.css";
 
 const LoginPage = () => {
@@ -10,16 +11,19 @@ const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLoginSuccess = () => {
-        const redirectUrl = localStorage.getItem('redirectAfterLogin');
-        localStorage.removeItem('redirectAfterLogin'); // Clear the saved URL
-
-        if (redirectUrl) {
-            navigate(redirectUrl);
-        } else {
-            navigate('/dashboard');
-        }
-    };
+    useEffect(() => {
+        const checkToken = async () => {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                const isValid = await verifyToken(token);
+                if (!isValid) {
+                    clearAuthData();
+                    setError("Session expired. Please login again.");
+                }
+            }
+        };
+        checkToken();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,37 +33,22 @@ const LoginPage = () => {
             setIsLoading(true);
             setError("");
 
-            const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/users/login`,
-                { email: email.trim(), password },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 10000
-                }
-            );
+            const response = await axiosInstance.post('/users/login', {
+                email: email.trim(),
+                password
+            });
 
-            if (response.data.success && response.data.token) {
-                // Store token and user data
+            if (response.data?.success && response.data?.token) {
                 localStorage.setItem('authToken', response.data.token);
                 localStorage.setItem('userData', JSON.stringify(response.data.user));
-
-                // Clear form
-                setEmail("");
-                setPassword("");
-
-                // Navigate to dashboard
-                handleLoginSuccess();
+                navigate('/dashboard');
             } else {
-                throw new Error(response.data.message || 'Login failed');
+                throw new Error(response.data?.message || 'Login failed');
             }
         } catch (error) {
             console.error("Login failed:", error);
-            setError(
-                error.response?.data?.message ||
-                "Invalid credentials. Please try again."
-            );
+            setError(error.response?.data?.message || "Invalid credentials");
+            clearAuthData();
         } finally {
             setIsLoading(false);
         }

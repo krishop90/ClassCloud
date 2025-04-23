@@ -1,7 +1,7 @@
 const express = require("express");
 const { body, validationResult } = require("express-validator");
 const { protect } = require("../middleware/authMiddleware");
-const { signup, login, forgotPassword, resetPassword , logout , deleteAccount} = require("../controllers/userController"); 
+const { signup, login, forgotPassword, resetPassword , logout , deleteAccount, verifyToken } = require("../controllers/userController"); 
 const jwt = require("jsonwebtoken");
 
 const router = express.Router();
@@ -42,5 +42,8 @@ router.post("/forgot-password", forgotPassword);
 
 // Reset Password Route
 router.post("/reset-password/:token", resetPassword);
+
+// Verify Token Route
+router.post('/verify-token', verifyToken);
 
 module.exports = router;

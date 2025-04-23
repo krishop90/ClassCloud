@@ -50,14 +50,12 @@ const bcrypt = require("bcrypt");
   const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         if (!email || !password) {
             return res.status(400).json({ 
                 success: false,
                 message: "Email and password are required" 
             });
         }
-
         const user = await User.findOne({ email: email.toLowerCase() });
         if (!user) {
             return res.status(401).json({ 
@@ -391,6 +389,26 @@ const bcrypt = require("bcrypt");
   }
 };
 
+const verifyToken = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.json({ valid: false });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id).select('-password');
+        
+        if (!user) {
+            return res.json({ valid: false });
+        }
+
+        res.json({ valid: true });
+    } catch (error) {
+        res.json({ valid: false });
+    }
+};
+
   module.exports = {
     signup,
     login,
@@ -404,6 +422,7 @@ const bcrypt = require("bcrypt");
     rejectFriendRequest,
     getRecentActivity,
     getFriendsList,
-    updatePassword
+    updatePassword,
+    verifyToken
   };
 
