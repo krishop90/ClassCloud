@@ -67,14 +67,12 @@ const io = socketIo(server, {
   transports: ['websocket', 'polling']
 });
 
-// Track connected sockets
 const connectedSockets = new Map();
 
 io.on("connection", (socket) => {
   console.log(`New client connected [ID: ${socket.id}]`);
   connectedSockets.set(socket.id, { connected: true, lastPing: Date.now() });
 
-  // Handle ping
   socket.on('ping', () => {
     connectedSockets.get(socket.id).lastPing = Date.now();
     socket.emit('pong');
@@ -154,8 +152,7 @@ io.on("connection", (socket) => {
     });
   });
 });
-
-// Cleanup stale connections periodically
+=
 setInterval(() => {
   const now = Date.now();
   connectedSockets.forEach((data, socketId) => {
@@ -169,8 +166,6 @@ setInterval(() => {
     }
   });
 }, 30000);
-
-// Error handling for the server
 server.on('error', (error) => {
   console.error('Server error:', error);
 });
@@ -198,7 +193,6 @@ app.use("thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails"
 
 app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 
-// MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB successfully"))
