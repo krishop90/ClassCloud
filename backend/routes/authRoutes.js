@@ -43,7 +43,8 @@ router.post("/forgot-password", forgotPassword);
 // Reset Password Route
 router.post("/reset-password/:token", resetPassword);
 
-// Verify Token Route
+// Verify Token Route (support POST and GET)
 router.post('/verify-token', verifyToken);
+router.get('/verify-token', verifyToken);
 
 module.exports = router;

@@ -1,5 +1,5 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
@@ -11,6 +11,7 @@ import TodoList from "./components/TodoList";
 import EditProfile from "./components/EditProfile";
 import Chatbot from "./components/Chatbot";
 import Chat from "./components/Chat";
+import ProtectedRoute from "./components/ProtectedRoute";
 import SignupPage from "./components/SignupPage";
 import LoginPage from "./components/LoginPage";
 import ResetPassword from "./components/ResetPassword";
@@ -18,12 +19,22 @@ import ForgotPassword from "./components/ForgotPassword";
 import "./App.css";
 
 const App = () => {
-  const token = localStorage.getItem("authToken");
+  const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(localStorage.getItem("authToken")));
+
+  useEffect(() => {
+    setIsAuthenticated(Boolean(localStorage.getItem("authToken")));
+  }, [location]);
 
   return (
     <div className="app">
-      <Header />
-      <Sidebar />
+      {/* Hide layout on auth pages; show on protected routes */}
+      {!(location.pathname === "/" || location.pathname === "/login" || location.pathname.startsWith('/reset-password') || location.pathname === '/forgot-password') && isAuthenticated && (
+        <>
+          <Header />
+          <Sidebar />
+        </>
+      )}
       <div className="main">
         <Routes>
           {/* Root route shows Signup Page */}
@@ -31,41 +42,38 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
 
           {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={token ? <Dashboard /> : <Navigate to="/login" />}
-          />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route
             path="/lectures"
-            element={token ? <Lectures /> : <Navigate to="/login" />}
+            element={<ProtectedRoute><Lectures /></ProtectedRoute>}
           />
           <Route
             path="/events"
-            element={token ? <Events /> : <Navigate to="/login" />}
+            element={<ProtectedRoute><Events /></ProtectedRoute>}
           />
           <Route
             path="/notes"
-            element={token ? <Notes /> : <Navigate to="/login" />}
+            element={<ProtectedRoute><Notes /></ProtectedRoute>}
           />
           <Route
             path="/community"
-            element={token ? <Community /> : <Navigate to="/login" />}
+            element={<ProtectedRoute><Community /></ProtectedRoute>}
           />
           <Route
             path="/todo"
-            element={token ? <TodoList /> : <Navigate to="/login" />}
+            element={<ProtectedRoute><TodoList /></ProtectedRoute>}
           />
           <Route
             path="/edit-profile"
-            element={token ? <EditProfile /> : <Navigate to="/login" />}
+            element={<ProtectedRoute><EditProfile /></ProtectedRoute>}
           />
           <Route
             path="/chat-bot"
-            element={token ? <Chatbot /> : <Navigate to="/login" />}
+            element={<ProtectedRoute><Chatbot /></ProtectedRoute>}
           />
           <Route
             path="/chat/:communityId"
-            element={token ? <Chat /> : <Navigate to="/login" />}
+            element={<ProtectedRoute><Chat /></ProtectedRoute>}
           />
 
 

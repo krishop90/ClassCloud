@@ -22,24 +22,36 @@ const uploadVideoHandler = async (req, res) => {
       return res.status(400).json({ message: "Title or description contains restricted words." });
     }
 
-    const videoDuration = await new Promise((resolve, reject) => {
-      ffmpeg.ffprobe(req.file.path, (err, metadata) => {
-        if (err) return reject(err);
-        resolve(metadata.format.duration);
+    let videoDuration = 0;
+    if (process.env.DISABLE_VIDEO_PROCESSING === 'true') {
+      videoDuration = 0;
+    } else {
+      videoDuration = await new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(req.file.path, (err, metadata) => {
+          if (err) {
+            return reject(new Error('Video probe failed. Ensure ffprobe is installed and configured via FFPROBE_PATH or available on PATH.'));
+          }
+          resolve(metadata.format.duration);
+        });
       });
-    });
+    }
     if (videoDuration > 2400) {
       return res.status(400).json({ message: "Video duration exceeds the 40-minute limit." });
     }
 
+    let thumbnailPath = null;
     const thumbnailDir = path.join(__dirname, "..", "uploads", "thumbnails");
-    const thumbnailPath = await generateThumbnail(req.file.path, thumbnailDir);
+    if (process.env.DISABLE_VIDEO_PROCESSING === 'true') {
+      thumbnailPath = path.join(thumbnailDir, 'placeholder.jpg');
+    } else {
+      thumbnailPath = await generateThumbnail(req.file.path, thumbnailDir);
+    }
 
     const newVideo = await Video.create({
       title,
       description,
       videoPath: req.file.path,
-      thumbnail: path.basename(thumbnailPath),
+      thumbnail: thumbnailPath ? path.basename(thumbnailPath) : null,
       uploadedBy: req.user._id
     });
     res.status(201).json(newVideo);

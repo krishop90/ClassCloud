@@ -29,18 +29,24 @@ const createEvent = async (req, res) => {
       _id: { $ne: req.user._id } 
     }).select('email name');
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.warn('Email credentials missing; skipping email notifications.');
+    }
+    const transporter = process.env.EMAIL_USER && process.env.EMAIL_PASS
+      ? nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          }
+        })
+      : null;
 
     const eventDate = new Date(date).toLocaleDateString();
     const eventLink = `${process.env.CLIENT_URL}/events/${newEvent._id}`;
 
     for (const user of users) {
+      if (!transporter) break;
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: user.email,

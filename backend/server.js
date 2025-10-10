@@ -38,7 +38,12 @@ uploadDirs.forEach(dir => {
 
 const app = express();
 const port = process.env.PORT || 5001;
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
@@ -70,7 +75,6 @@ const io = socketIo(server, {
 const connectedSockets = new Map();
 
 io.on("connection", (socket) => {
-  console.log(`New client connected [ID: ${socket.id}]`);
   connectedSockets.set(socket.id, { connected: true, lastPing: Date.now() });
 
   socket.on('ping', () => {
@@ -116,18 +120,15 @@ io.on("connection", (socket) => {
 
   socket.on("joinCommunity", (communityId, username) => {
     try {
-      console.log(`${username} joined the ${communityId} room`);
       socket.join(communityId);
       socket.emit("joinedCommunity", { status: "success", communityId });
     } catch (error) {
-      console.error(`Error joining community: ${error}`);
       socket.emit("error", "Failed to join community");
     }
   });
 
   socket.on("sendMessage", (data) => {
-    const { communityId, message, senderId, senderName } = data;
-    console.log(`Sending message to ${communityId} room from ${senderName}: ${message}`);
+    const { communityId, message, senderId, senderName } = data || {};
   
     const messageData = {
       communityId,
@@ -137,11 +138,12 @@ io.on("connection", (socket) => {
       timestamp: new Date(),
     };
   
-    io.to(communityId).emit("receiveMessage", messageData);
+    if (communityId) {
+      io.to(communityId).emit("receiveMessage", messageData);
+    }
   });
 
-  socket.on("disconnect", (reason) => {
-    console.log(`Client disconnected [ID: ${socket.id}] Reason: ${reason}`);
+  socket.on("disconnect", () => {
     connectedSockets.delete(socket.id);
     
     // Leave all rooms
@@ -152,14 +154,13 @@ io.on("connection", (socket) => {
     });
   });
 });
-=
+
 setInterval(() => {
   const now = Date.now();
   connectedSockets.forEach((data, socketId) => {
     if (now - data.lastPing > 70000) { // 70 seconds
       const socket = io.sockets.sockets.get(socketId);
       if (socket) {
-        console.log(`Closing stale connection [ID: ${socketId}]`);
         socket.disconnect(true);
       }
       connectedSockets.delete(socketId);
@@ -173,7 +174,7 @@ server.on('error', (error) => {
 app.use("/api/community", communityRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", authRoutes);
-app.use('api/update-password', profileRoutes);
+app.use('/api/update-password', profileRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/videos", videoRoutes);
@@ -188,7 +189,7 @@ app.use('/api/activity', activityRoutes);
 
 
 app.use(express.static(path.join(__dirname, "vite2-project2", "public")));
-app.use("thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
+app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));
 
 
 app.use("/thumbnail", express.static(path.join(__dirname, "uploads", "thumbnails")));

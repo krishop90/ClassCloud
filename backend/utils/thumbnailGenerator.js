@@ -1,8 +1,13 @@
 const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 
-ffmpeg.setFfmpegPath('C:/ffmpeg-master-latest-win64-gpl-shared/bin/ffmpeg.exe');
-ffmpeg.setFfprobePath('C:/ffmpeg-master-latest-win64-gpl-shared/bin/ffprobe.exe');
+// Configure via environment when available; otherwise rely on system PATH
+if (process.env.FFMPEG_PATH) {
+  ffmpeg.setFfmpegPath(process.env.FFMPEG_PATH);
+}
+if (process.env.FFPROBE_PATH) {
+  ffmpeg.setFfprobePath(process.env.FFPROBE_PATH);
+}
 
 const generateThumbnail = (videoPath, thumbnailDir) => {
   return new Promise((resolve, reject) => {

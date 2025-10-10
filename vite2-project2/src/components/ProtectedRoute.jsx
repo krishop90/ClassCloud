@@ -1,20 +1,47 @@
-import { Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { verifyToken } from '../utils/auth';
 
 const ProtectedRoute = ({ children }) => {
-    const token = localStorage.getItem('authToken');
+    const [isVerified, setIsVerified] = useState(false);
+    const [isChecking, setIsChecking] = useState(true);
+    const navigate = useNavigate();
 
-    if (!token) {
-        return <Navigate to="/login" replace />;
+    useEffect(() => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            setIsChecking(false);
+            setIsVerified(false);
+            return;
+        }
+
+        let isMounted = true;
+        verifyToken(token)
+            .then((valid) => {
+                if (!isMounted) return;
+                setIsVerified(Boolean(valid));
+            })
+            .catch(() => {
+                if (!isMounted) return;
+                setIsVerified(false);
+            })
+            .finally(() => {
+                if (!isMounted) return;
+                setIsChecking(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [navigate]);
+
+    if (isChecking) {
+        return null;
     }
 
-    // Verify token silently
-    verifyToken(token).catch(() => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        alert("Session expired. Please log in again."); // Added alert for better feedback
-        window.location.href = '/login';
-    });
+    if (!isVerified) {
+        return <Navigate to="/login" replace />;
+    }
 
     return children;
 };

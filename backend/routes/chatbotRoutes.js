@@ -13,6 +13,9 @@ router.post("/ask", async (req, res) => {
   }
 
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(503).json({ error: "Chatbot API is not configured" });
+    }
     const faq = await FAQ.findOne({ question: message });
     if (faq) {
       return res.json({ reply: faq.answer });
@@ -24,15 +27,13 @@ router.post("/ask", async (req, res) => {
     }
 
     const response = await axios.post(
-      "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
       {
         contents: [
           {
             role: "user",
             parts: [
-              {
-                text: `You are ClassCloud's official chatbot. Always give concise, direct, and clear answers. Avoid any irrelevant details. Here's the question: "${message}".`
-              }
+              { text: `You are ClassCloud's official chatbot. Be concise, direct, and clear. Question: "${message}".` }
             ]
           }
         ]
@@ -43,15 +44,15 @@ router.post("/ask", async (req, res) => {
       }
     );
 
-    const botReply = response.data.candidates[0]?.content?.parts[0]?.text || "I couldn't find an answer.";
+    const botReply = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't find an answer.";
 
     await ChatHistory.create({ userMessage: message, botReply });
 
     res.json({ reply: botReply });
 
   } catch (error) {
-    console.error("Gemini API Error:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to get a response from Gemini AI" });
+    const friendly = "I'm having trouble reaching the AI service right now. Please try again in a moment.";
+    return res.status(200).json({ reply: friendly });
   }
 });
 

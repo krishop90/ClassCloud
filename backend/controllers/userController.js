@@ -159,7 +159,15 @@ const bcrypt = require("bcrypt");
 
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
       
-      const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
+      const clientUrl = process.env.CLIENT_URL;
+      if (!clientUrl) {
+        return res.status(503).json({ message: 'CLIENT_URL is not configured on the server' });
+      }
+      const resetUrl = `${clientUrl}/reset-password/${token}`;
+
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        return res.status(503).json({ message: 'Email credentials are not configured on the server' });
+      }
 
       const transporter = nodemailer.createTransport({
         service: "gmail",
