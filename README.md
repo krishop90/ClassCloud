@@ -1,6 +1,10 @@
 # EduConnect
 EduConnect is platform for the students and teachers to be gather on one platform and solve doubts and create communities and grow together
 
+HERE I'M ATTACHING THE VIDEO (CHATBOT IS NOT WORKING BECAUSE OF THE API ISSUE - FREE TIER)
+https://drive.google.com/file/d/1dxKp4IcQCqmN73mBaQTjj_h7gz8s8WFI/view?usp=drive_link
+
+
 This platform is all about leaning from others and sharing personal knowledge to other student
 
 Features Implemented
